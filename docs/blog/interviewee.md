@@ -92,6 +92,7 @@ addEventListener('click', funciton(){}, true) // 事件捕获  默认为false �
 </script>
 
 </html>
+// log 
 我是mother
 我是daughter
 我是baby
@@ -201,12 +202,13 @@ addEventListener('click', funciton(){}, true) // 事件捕获  默认为false �
 4. null
 5. undefined
 6. symbol
+7. bigint
 
 存储在栈内存（不会有引用关系）
 
 ## 引用数据类型
 
-1. array
+1. function
 2. object
 
 值具体存储在堆内存，然后在栈内存里面存着一个指向堆内存值得地址（会有引用关系）
@@ -215,13 +217,20 @@ addEventListener('click', funciton(){}, true) // 事件捕获  默认为false �
 
 判断 array 和 object
 
-arr.constructor == Array
+arr.constructor == Array => arr.constructor 实际上是 arr.__ proto __.constructor 然而 arr.proto 指向 Array.prototype 
 
 obj.constructor == Object
 
+### typeof 
+
+	1. typeof null => "object"
+ 	2. typeof arr => "object"
+ 	3. typeof {} => "object"
+ 	4. typeof function test(){} => "function"
 
 
-arr instanceof Array
+
+arr instanceof Array : 右边变量的prototype在不在左边变量的原型链上；
 
 ```javascript
 let arr = [1, 2, 3]
@@ -977,25 +986,25 @@ window.onload = fn // => 所有资源加载完
             ```javascript
             <!-- Defer Attribute -->
             <script defer src="foo.js">
-
+    
             <!-- Async Attribute -->
             <script async src="foo.js">
             为什么：
-
+    
             ​	JavaScript阻止HTML文档的正常解析，因此当解析器到达<script>标记时（特别是在内），它会停止解析并且执行脚本。如果您的脚本位于页面顶部，则强烈建议添加async和defer，但如果在标记之前加载，没有太大影响。但是，使用这些属性来避免性能问题是一种很好的做法。
-
+    
             怎么做：
-
+    
             ​	添加async（如果脚本不依赖于其他脚本）或defer（如果脚本依赖或依赖于异步脚本）作为script脚本标记的属性。 如果有小脚本，可以在异步脚本上方使用内联脚本。
-
+    
             1. async : 加载脚本和渲染后续文档元素并行进行，脚本加载完成后，暂停html解析，立即解析js脚本
-
+    
                defer : 加载脚本和渲染后续文档元素并行进行，但脚本的执行会等到 html 解析完成后执行
-
+    
             2. prefetch ：其利用浏览器空闲时间来下载或预取用户在不久的将来可能访问的文档。<link href="/js/xx.js" rel="prefetch">
-
+    
                preload : 可以指明哪些资源是在页面加载完成后即刻需要的，浏览器在主渲染机制介入前就进行预加载，这一机制使得资源可以更早的得到加载并可用，且更不易阻塞页面的初步渲染，进而提升性能。<link href="/js/xxx.js" rel="preload" as="script"> 需要 as 指定资源类型，目前可用的属性类型有如下：
-
+    
                audio: 音频文件。
                document: 一个将要被嵌入到<frame>或<iframe>内部的HTML文档。
                embed: 一个将要被嵌入到<embed>元素内部的资源。
@@ -1389,7 +1398,7 @@ vue-router源码：
 
       1. 可以看出主要做的事情就是根据用户路由配置对象生成普通的path来对应的路由记录以及根据name来对应的路由记录的map，方便后续匹配对应
 
-      ```javascript
+      ```vue
       /* @flow */
       
       import { assert, warn } from './util/warn'
@@ -1581,7 +1590,7 @@ vue-router源码：
    
    var func = obj.func
    func() // window
-   ```
+   ```  
 
 3. ```javascript
    // 上下文调用模式
@@ -1640,3 +1649,90 @@ vue-router源码：
 | 传输方式     | 面向报文                                   | 面向字节流                       |
 | 首部开销     | 首部开销小，仅8字节                        | 首部最小20字节，最大60字节       |
 | 场景         | 适用于实时应用，（IP电话，直播，视频会议） | 文件传输                         |
+
+# AMD/CMD/CommonJs/ES6 module
+
+1. AMD
+
+   1. AMD一开始是CommonJS规范中的一个草案，全称是Asynchronous Module Definition , 即异步模块加载机制，后来该草案的作者以RequireJS实现了AMD规范，所以一般说AMD也是指RequireJS
+
+   2. ```javascript
+      // a.js
+      // define 可以传入三个参数、分别是字符串--模块名，数组--依赖模块，函数--回调函数
+      define(function (){
+          return 1
+      })
+      
+      // b.js
+      // 数组中声明需要加载的模块，可以是模块名，js文件路径
+      require(['a'], function (a) {
+          console.log(a) // 1
+      })
+      
+      ```
+
+   3. 特点
+
+      1. 对于依赖的模块，AMD推崇依赖前置，提前执行，也就是说，在define方法里传入的依赖模块（数组），会在一开始就下载并执行。
+
+2. CMD
+
+   1. CMD是Seajs在推广过程中生产的对模块定义的规范，在Web浏览器端的模块加载器中，SeaJS与RequireJS并称，SeaJS作者为阿里的玉伯
+
+   2. ```javascript
+      // a.js
+      /* 
+       * define接受factory参数，factory可以为一个参数，也可以是一个对象或者字符串
+       * factory为对象时、字符串时，表示模块的接口就是该对象或者字符串
+       * define也接受两个以上的参数，字符串id表示模块标识，数组deps是模块依赖
+      */
+      
+      define(function(require, exports, module) {
+          var $ = require("jquery");
+          
+          exports.setColor = function() {
+              $('body').css("color", "green")
+          };
+      })
+      
+      // b.js
+      seajs.use(['a'], function(){
+          $("#el").click(a.setColor)
+      })
+      
+      ```
+
+   3. 特点
+
+      1. 对于依赖的模块，CMD推崇依赖就近，延迟执行，也就是说，只有到require时依赖模块才执行。
+
+3. CommonJS
+
+   1. CommonJS规范为CommonJS小组所提出，目的时弥补Javascript在服务器端缺少模块化机制，NodeJS、Webpack都是基于该规范来实现的。
+
+   2. ```javascript
+      // a.js 
+      module.export = function() {
+          console.log("hello world")
+      }
+      
+      // b.js
+      var a = require("a.js")
+      a(); // hello world
+      
+      
+      // or
+      
+      // a2.js
+      exports.num = 1
+      exports.obj = {
+          name: 'DARREN'
+      }
+      
+      // b2.js
+      
+      var a2 = require("a2.js")
+      console.log(a2) {num:1， obj: { name: "DARREN"}}
+      ```
+
+   3. 
