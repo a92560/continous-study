@@ -15,5 +15,6 @@ module.exports = {
       ['/', '首页'],
       ['/blog/interviewee.md', '前端知识点']
     ]
-  }
+  },
+  base: 'https://github.com/a92560/continous-study/'
 }
