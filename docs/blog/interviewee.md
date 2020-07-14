@@ -1292,9 +1292,10 @@ vue-router源码：
       })
 
    3. 注册两个全局组件
-
+      ```html
       1. <router-view></router-view>
       2. <router-link></router-link>
+      ```
 
    ```javascript
    // 注入 $router $route
@@ -1536,8 +1537,6 @@ vue-router源码：
 
 
 # 洋葱模型解决的问题
-
-
 
 
 
