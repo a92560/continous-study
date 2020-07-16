@@ -238,6 +238,22 @@ console.log(arr instanceof Object) // true
 // 因为Array 是 Object的子类
 ```
 
+```javascript
+function myInstanceOf(left, right) {
+    var rightProtoValue = right.prototype;
+    var leftProtoValue = left.__proto__;
+    while (true) {
+        if (leftProtoValue === rightProtoValue) {
+            return true;
+        }
+        if (leftProtoValue == null) {
+            return false;
+        }
+        leftProtoValue = leftProtoValue.__proto__;
+    }
+}
+```
+
 
 
 ## Prototype
@@ -1589,7 +1605,7 @@ vue-router源码：
    
    var func = obj.func
    func() // window
-   ```  
+   ```
 
 3. ```javascript
    // 上下文调用模式
