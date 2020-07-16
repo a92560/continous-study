@@ -270,6 +270,8 @@ function myInstanceOf(left, right) {
 
 1. 在将子类的原型复制给父类的实例化对象之前
 2. 我们在Child.prototype添加的方法会被覆盖哦
+3. 来自原型对象的所有属性都被共享了，不小心修改了父类的引用类型的数据，那么所有子类创建的实例对象都会受到影响哦
+4. 创建子类时，无法向父类传参
 
 ```javascript 
 function Animal(name, age) {
@@ -309,7 +311,7 @@ function Parent (name) {
 }
 
 function Child (name) {
-    this.feature = ['cute'];
+    this.features = ['cute'];
 }
 
 var parent = new Parent('parent');
@@ -322,13 +324,13 @@ child1.colors.push('yellow');
 child1.features.push('sunshine');
 
 var child2 = new Child('child2');
-console.log(child1); {sex: 'girl', feature: ['cute', 'sunshine'], __proto__: Parent{}}
-console.log(child2); {feature: ['cute']}
+console.log(child1); // {sex: 'girl', feature: ['cute', 'sunshine'], __proto__: Parent{}}
+console.log(child2); // {feature: ['cute']}
 
-console.log(child1.name); parent
-console.log(child2.colors); ['white', 'black', 'yellow']
+console.log(child1.name); // parent
+console.log(child2.colors); // ['white', 'black', 'yellow']
 
-console.log(parent); {name: 'parent', sex: 'boy', color: ['white', 'black', 'yellow']}
+console.log(parent); // {name: 'parent', sex: 'boy', color: ['white', 'black', 'yellow']}
 ```
 
 # this指向问题
