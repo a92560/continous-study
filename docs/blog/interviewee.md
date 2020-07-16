@@ -264,7 +264,12 @@ function myInstanceOf(left, right) {
 
 # 继承
 
-## 原型继承
+## 原型链继承
+
+将子类的原型对象指向父类的实例
+
+1. 在将子类的原型复制给父类的实例化对象之前
+2. 我们在Child.prototype添加的方法会被覆盖哦
 
 ```javascript 
 function Animal(name, age) {
@@ -280,6 +285,9 @@ function Cat(name, age) {
     // 自然执行, this 指向 Window
     Animal.call(this, name, age)
 }
+Cat.prototype.success = function () {
+    console.log(`${this.name} is success`);
+}
 // 原型对象 = new 父类的实例化对象
 Cat.prototype = new Animal()
 
@@ -288,7 +296,39 @@ Cat.prototype = new Animal()
 Cat.prototype.constructor = Cat.constructor
 
 let cat = new Cat("kitty", 5)
+let animal = new Animal("animal", 66);
 console.log("cat", cat)
+console.log("animal", animal);
+
+
+// exam
+function Parent (name) {
+	this.name = name;
+    this.sex = 'boy';
+    this.colors = ['white', 'black'];
+}
+
+function Child (name) {
+    this.feature = ['cute'];
+}
+
+var parent = new Parent('parent');
+Child.prototype = parent;
+
+var child1 = new Child("child1");
+
+child1.sex = 'girl';
+child1.colors.push('yellow');
+child1.features.push('sunshine');
+
+var child2 = new Child('child2');
+console.log(child1); {sex: 'girl', feature: ['cute', 'sunshine'], __proto__: Parent{}}
+console.log(child2); {feature: ['cute']}
+
+console.log(child1.name); parent
+console.log(child2.colors); ['white', 'black', 'yellow']
+
+console.log(parent); {name: 'parent', sex: 'boy', color: ['white', 'black', 'yellow']}
 ```
 
 # this指向问题
