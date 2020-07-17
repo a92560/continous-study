@@ -427,10 +427,45 @@ function Child(name) {
 	this.sex = 'boy';
     this.face = 'smile';
 }
- 
+
+Child.prototype = Object.create(Parent.prototype);
+Child.ptototype.construtor = Child;
+
+
+var child1 = new Child('child1');
+child1.colors.push('yellow');
+var child2 = new Child('child2');
+child2.features = ['sunshine'];
+console.log(child1); { name: 'child1', sex: 'boy', face: 'smile', colors: ['white', 'black', 'yellow']}
+console.log(child2); { name: 'child2', sex: 'boy', face: 'smile', colors: ['white', 'black']}
+
+child1.getFeatures(); ['cute']
+child2.getFeatures(); ['sunshine']
 ```
 
 
+
+Object.create()
+
+```javascript
+// 将传入的对象作为返回对象的原型
+function create(obj) {
+    function F() {}
+    F.prototype = obj;
+    return new F();
+}
+// 即 return.__proto__ = obj
+
+Function.prototype.myCall = function (context) {
+    if (typeof this !== 'function') {
+        return new TypeError("not function")
+    }
+    context = context || window;
+    context.fn = this;
+    let args = [].shift.call(arguments);
+    let ret = 
+}
+```
 
 
 
