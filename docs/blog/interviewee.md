@@ -330,8 +330,109 @@ console.log(child2); // {feature: ['cute']}
 console.log(child1.name); // parent
 console.log(child2.colors); // ['white', 'black', 'yellow']
 
+<<<<<<< HEAD
 console.log(parent); // {name: 'parent', sex: 'boy', color: ['white', 'black', 'yellow']}
+=======
+console.log(parent); {name: 'parent', sex: 'boy', color: ['white', 'black', 'yellow']}
+
 ```
+
+## 构造函数继承
+
+原理： 在子类构造函数内部使用call/apply来调用父类构造函数
+
+缺点：构造函数继承只能继承父类的实例和方法，不能继承父类原型的属性和方法
+
+```javascript
+function Parent(name, sex) {
+    this.name = name;
+    this.sex = sex;
+    this.colors = ['white', 'black'];
+};
+
+function Child(name, sex) {
+    Parent.call(this, name, sex);
+}
+
+var child1 = new Child('child1', 'boy');
+child1.colors.push('blue');
+
+var child2 = new Child('child2', 'girl');
+console.log(child1);
+console.log(child2);
+
+```
+
+
+
+## 组合继承
+
+1. 使用原型链继承来保证子类能继承到父类原型中的属性和方法
+2. 使用构造函数继承来保证子类能继承到父类的实例和方法
+
+```javascript
+function Parent(name, colors) {
+    this.name = name;
+    this.colors = colors;
+}
+
+Parent.prototype.features = ['cute'];
+function Child(name, colors){
+    this.sex = 'boy';
+    Parent.apply(this, [name, colors]);
+}
+
+Child.prototype = new Parent();
+Child.prototype.constructor = Child;
+var child1 = new Child('child1', ['white']);
+
+child1.colors.push('black');
+child1.features.push('sunshine');
+
+
+var child2 = new Child('child2', ['blue']);
+
+console.log(child1); { name: 'child1', colors: ['white', 'black']}
+console.log(child2); { name: 'child2', colors: ['blue']}
+console.log(child2.prototype); Parent{ name: undefined, colors: undefined, constructor: f Child()}
+
+console.log(child1 instanceof Child); // true
+console.log(child2 instanceof Parent); // true
+>>>>>>> fb24bdbb9ccc3b6c290843f93b7bc8c700d5c795
+```
+
+缺点：
+
+1. 父类构造函数会被调用两次
+2. 生成了两个实例，子类实例中的属性和方法会覆盖子类原型（父类实例）上的属性和方法，增加了不必要的内存
+
+
+
+## 寄生组合式继承
+
+```javascript
+function Parent(name) {
+    this.name = name;
+    this.face = 'cry';
+    this.colors = ['white', 'black'];
+}
+
+Parent.prototype.features = ['cute'];
+Parent.prototype.getFeatures = function () {
+    console.log(this.features);
+}
+
+function Child(name) {
+	Parent.call(this, name);
+	this.sex = 'boy';
+    this.face = 'smile';
+}
+ 
+```
+
+
+
+
 
 # this指向问题
 
