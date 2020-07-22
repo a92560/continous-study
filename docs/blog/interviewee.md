@@ -1991,3 +1991,16 @@ vue-router源码：
    1. null  == undefined  => true 剩余 null 、undefined和其他任何数据类型都不相等
    2. 字符串 == 对象  要把对象转换为字符串
    3. 余下的，都是需要两边转成数字再作比较
+
+
+
+## 跨域
+
+1. 为什么会有跨域？
+   1. 浏览器同源策略，相同协议，相同主机名，相同端口号，才视为同源。
+   2. 主要是为了防止CSRF攻击的，简单点说，CSRF就是攻击就是利用用户的登录态发起恶意请求
+2. 简单请求
+   1. 请求方法为get/head/post
+   2. post请求的Content-Type并非application/x-www-urlencoded，multipart/form-data，或text/plain;
+   3. 请求设置了自定义的header字段（可允许：Accept, Accept-Language，Content-Language, Content-Type）;
+
