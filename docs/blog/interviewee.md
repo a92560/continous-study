@@ -1218,7 +1218,11 @@ window.onload = fn // => 所有资源加载完
 
             ​	确保使用async或defer加载所有script文件，并准确地在中加载代码。
 
-         2.  非阻塞JavaScript： high 使用defer属性或使用async来异步加载JavaScript文件。
+         2. 非阻塞JavaScript： high 使用defer属性或使用async来异步加载JavaScript文件。
+         
+         3. https://www.zcfy.cc/article/building-the-dom-faster-speculative-parsing-async-defer-and-preload-x2605-mozilla-hacks-8211-the-web-developer-blog-4224.html?t=new
+         
+         4. https://segmentfault.com/a/1190000006778717
 
 
             ```javascript
@@ -1235,9 +1239,16 @@ window.onload = fn // => 所有资源加载完
     
             ​	添加async（如果脚本不依赖于其他脚本）或defer（如果脚本依赖或依赖于异步脚本）作为script脚本标记的属性。 如果有小脚本，可以在异步脚本上方使用内联脚本。
     
-            1. async : 加载脚本和渲染后续文档元素并行进行，脚本加载完成后，暂停html解析，立即解析js脚本
+            1. async : 加载脚本和渲染后续文档元素并行进行，脚本加载完成后，暂停html解析，立即解析js脚本（load事件之前执行）
     
-               defer : 加载脚本和渲染后续文档元素并行进行，但脚本的执行会等到 html 解析完成后执行
+               defer : 加载脚本和渲染后续文档元素并行进行，但脚本的执行会等到 html 解析完成后执行(DOMContentLoaded 之前)
+               1. defer
+               	1.1 会保证顺序执行
+               2. async 
+                2.1 不一定保证顺序执行
+                2.2 有依赖的文件不建议使用
+               3. 参考 https://segmentfault.com/a/1190000006778717
+               4. 参考 https://www.zcfy.cc/article/building-the-dom-faster-speculative-parsing-async-defer-and-preload-x2605-mozilla-hacks-8211-the-web-developer-blog-4224.html?t=new
     
             2. prefetch ：其利用浏览器空闲时间来下载或预取用户在不久的将来可能访问的文档。<link href="/js/xx.js" rel="prefetch">
     
