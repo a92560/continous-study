@@ -1125,16 +1125,71 @@ window.onload = fn // => 所有资源加载完
 1. 浏览器进程发出"提交文档"的信息，渲染进程接收到"提交文档"的消息后，会和网络进程建立传输数据的"管道"
 
    1. 提交文档过程中，网络进程边下载边提交给渲染进程
+
    2. 渲染进程接收到第一批数据，就开始做DOM解析了
+
+      ```html
+      当服务器接收到HTML页面的第一批数据时，DOM解析器就开始工作了，在解析过程中，如果遇到了JS脚本，如下所示
+      <html>
+          <body>
+              <script>
+              	document.write('--foo')
+              </script>
+          </body>
+      </html>
+      
+      那么DOM解析器会先执行JavaScript脚本，执行完成之后，再继续往下解析
+      
+      第二种情况
+      <html>
+          <body>
+              <script type='text/javascript' src='foo.js'>
+              </script>
+          </body>
+      </html>
+      这种情况下，当解析到JavaScript的时候，会先暂停DOM解析，并下载foo.js文件，下载完成之后执行该段js文件，然后再继续往下解析DOM，这就是JavaScript文件为什么会阻塞DOM渲染
+      
+      第三种情况
+      <html>
+          <head>
+              <style type="text/css" src='theme.css'></style>
+          </head>
+          <body>
+              <p>
+                  极客时间
+              </p>
+              <script>
+              	let e = document.getElementsByTagName('p')[0]
+                  e.style.color = 'blue'
+              </script>
+          </body>
+      </html>
+      当我在JavaScript中访问了某个元素的样式，那么这时候就需要等待这个样式被下载完成才能继续往下执行，所以在这种情况下，CSS也会解析DOM的解析
+      
+      所以JS和CSS都有可能会阻塞DOM的解析
+      
+      ```
+
+      
+
    3. 浏览器不能直接理解HTML数据，所以第一步需要将其转换为浏览器能够理解的DOM树结构（渲染进程将HTML内容转换为能够读懂的DOM结构）
+
    4. 渲染引擎将CSS样式表转换为浏览器可以理解的stylesheets。
+
    5. 生成DOM树后，还需要根据CSS样式表，来计算DOM树的所有节点的样式；
+
    6. 最后计算DOM元素的布局信息，使其都保存在布局树中
+
    7. 对布局树进行分层，并生成分层树
+
    8. 为每个图层生成绘制列表，并将其提交到合成线程
+
    9. 合成线程将图层分成图块，并在光栅化线程池中将图块转化成位图
+
    10. 合成线程发送绘制图块命令DrawQuad给浏览器进程
+
    11. 浏览器进程根据DrawQuad命令生成页面，并显示到显示器上
+
    12. 使用CSS transform来实现动画效果，这样避免重排和重绘阶段，直接在非主线程上执行合成动画操作。这样的效率是最高的。
 
 2. 等文档数据传输完成之后，渲染进程会返回"确认提交"的消息给浏览器进程
