@@ -1036,6 +1036,23 @@ window.onload = fn // => 所有资源加载完
 6. Sequence Number(顺序号码)
 7. Acknowledge Number(确认号码)
 
+- TLS连接https://www.cnblogs.com/Wayou/p/ssl_tls_handshake.html
+
+  - 客户端向服务端发送随机数Random1和客户端支持的密码套件和当前SSL版本
+- 服务端从客户端加密套件列表中选择一个，加密套件决定了后续加密及生成摘要的算法，生成Random2，两端的随机数会在后续生成对称密钥时使用，服务器将自己的证书下发给客户端，让客户端验证服务器的身份
+  - 客户端收到证书后才CA验证其合法性
+  - 验证合法后从证书取出公钥，生成随机数Random3
+    - 使用公钥非对称加密生成pre_master key
+  - 并将pre_master key发送服务器
+  - 服务端接收到pre_master key，用自己的私钥解出Random 3
+  - 此时服务端和客户端两端都有Random 1-3
+    - 两端使用相同的算法生成密钥，握手结束后的数据传输都使用此密钥进行对称加密
+  - 为何需要三个random
+    - 因为SSL/TSL握手过程数据明文传输，多个随机数种子生成的密钥不容易暴力破解
+- 客户端使用前面协商出来的密钥加密
+  
+- 服务端使用密钥解密，解密成功说明密钥一致。
+  
 - 三次握手
 
   1. 第一次握手，客户端发送syn包（Seq = x）到服务器，并进入SYN_SEND状态，等待服务器确认；
@@ -1256,7 +1273,11 @@ window.onload = fn // => 所有资源加载完
 
             ​	确保使用async或defer加载所有script文件，并准确地在中加载代码。
 
-         2.  非阻塞JavaScript： high 使用defer属性或使用async来异步加载JavaScript文件。
+         2. 非阻塞JavaScript： high 使用defer属性或使用async来异步加载JavaScript文件。
+         
+         3. https://www.zcfy.cc/article/building-the-dom-faster-speculative-parsing-async-defer-and-preload-x2605-mozilla-hacks-8211-the-web-developer-blog-4224.html?t=new
+         
+         4. https://segmentfault.com/a/1190000006778717
 
 
             ```javascript
@@ -1273,9 +1294,16 @@ window.onload = fn // => 所有资源加载完
     
             ​	添加async（如果脚本不依赖于其他脚本）或defer（如果脚本依赖或依赖于异步脚本）作为script脚本标记的属性。 如果有小脚本，可以在异步脚本上方使用内联脚本。
     
-            1. async : 加载脚本和渲染后续文档元素并行进行，脚本加载完成后，暂停html解析，立即解析js脚本
+            1. async : 加载脚本和渲染后续文档元素并行进行，脚本加载完成后，暂停html解析，立即解析js脚本（load事件之前执行）
     
-               defer : 加载脚本和渲染后续文档元素并行进行，但脚本的执行会等到 html 解析完成后执行
+               defer : 加载脚本和渲染后续文档元素并行进行，但脚本的执行会等到 html 解析完成后执行(DOMContentLoaded 之前)
+               1. defer
+               	1.1 会保证顺序执行
+               2. async 
+                2.1 不一定保证顺序执行
+                2.2 有依赖的文件不建议使用
+               3. 参考 https://segmentfault.com/a/1190000006778717
+               4. 参考 https://www.zcfy.cc/article/building-the-dom-faster-speculative-parsing-async-defer-and-preload-x2605-mozilla-hacks-8211-the-web-developer-blog-4224.html?t=new
     
             2. prefetch ：其利用浏览器空闲时间来下载或预取用户在不久的将来可能访问的文档。<link href="/js/xx.js" rel="prefetch">
     
@@ -2016,3 +2044,29 @@ vue-router源码：
 3. Javascript单线程任务会被分为同步任务和异步任务，同步任务会在调用栈中按照顺序等待主线程一次执行，异步任务会在异步任务有了结果之后，将注册的回调函数放入任务队列中等待主线程空闲的时候（调用栈被清空），被读取到栈内等待主线程的执行
 4. 执行栈在执行完同步任务后，查看执行栈是否为空，如果执行栈为空，就会去检查微任务队列是否为空，如果为空，就去执行宏任务，否则就一次性执行完所有微任务。
 5. 每次单个宏任务执行完之后，会检查微任务队列是否为空，如果不为空的话，会按照先入先出的规则执行完所有的微任务后，然后再执行宏任务，如此循环。
+
+
+
+## 隐式转换
+
+1. 左右两边类型一样
+   1. {} == {} false 引用值比较的是堆内存的地址
+   2. [] == [] false 
+   3. NaN == NaN false
+2. 左右两边类型不一样
+   1. null  == undefined  => true 剩余 null 、undefined和其他任何数据类型都不相等
+   2. 字符串 == 对象  要把对象转换为字符串
+   3. 余下的，都是需要两边转成数字再作比较
+
+
+
+## 跨域
+
+1. 为什么会有跨域？
+   1. 浏览器同源策略，相同协议，相同主机名，相同端口号，才视为同源。
+   2. 主要是为了防止CSRF攻击的，简单点说，CSRF就是攻击就是利用用户的登录态发起恶意请求
+2. 简单请求
+   1. 请求方法为get/head/post
+   2. post请求的Content-Type并非application/x-www-urlencoded，multipart/form-data，或text/plain;
+   3. 请求设置了自定义的header字段（可允许：Accept, Accept-Language，Content-Language, Content-Type）;
+
