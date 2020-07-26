@@ -98,7 +98,11 @@ addEventListener('click', funciton(){}, true) // 事件捕获  默认为false �
 我是grandma
 ```
 
+## 事件代理
 
+1. 优点
+   1. 提高性能，大量节省内存占用
+   2. 动态添加的子元素无需重新绑定事件
 
 # 盒模型
 
@@ -470,7 +474,7 @@ Function.prototype.myCall = function (context) {
 
 # this指向问题
 
-## 1. 函数执行window
+## 1. 函数执行window（普通函数调用）
 
 ```javascript
 function a() {
@@ -484,7 +488,7 @@ setInterval(() => {
 
 ```
 
-## 2.谁点谁就指向谁
+## 2.谁点谁就指向谁（对象调用）
 
 ```javascript
 let obj = {
@@ -1003,6 +1007,48 @@ window.onload = fn // => 所有资源加载完
 
 # URL的输入到浏览器解析的一系列事件
 
+## 用户输入
+
+1. 地址栏判断输入的是关键字还是请求的URL
+2. 当浏览器刚开始加载一个地址之后，标签页上的图标便进入了加载状态，但此时图中页面显示的依然是之前打开的页面内容，因为需要等待提交文档阶段，页面内容才会被替换
+
+## URL请求过程
+
+1. 浏览器进程通过进程间通信把URL请求发送至网络进程，网络进程接收到URL请求之后，会在这里发起真正的URL请求
+
+   1. 网络进程首先查找本地缓存是否缓存了该资源，如果有缓存资源，那么直接返回资源给浏览器进程。
+
+   2. 如果没有直接进入网络请求流程。
+
+      1. DNS解析
+      2. 如果请求协议是https，建立SSL/TLS链接
+
+   3. 建立连接之后，浏览器端将构建请求行、请求头等信息，并把和该域名相关的cookie字段等数据附加到请求头中，然后向服务器发送构建的请求信息。
+
+   4. 服务器接收到请求之后，会根据请求信息生成响应数据（包括响应行，响应头和响应体等信息），并发给网络进程，等网络进程接收到响应行和响应头之后，就开始解析响应头的内容
+
+      1. 重定向
+
+         如果状态码是301/302，浏览器会跳转到新的地址继续导航，如果状态码是200，那么表示浏览器可以继续处理该请求。
+
+      2. 响应数据处理类型
+
+         Content-Type，Content-Type是HTTP头中一个非常重要的字段，它告诉浏览器服务器返回的响应体数据是什么类型，然后浏览器根据Content-Type的值来决定如何显示响应体的内容
+
+         application/octet-stream（字节流类型，根据下载类型来处理）
+
+      3. 解析完成之后发送给浏览器进程
+
+   5. 浏览器进程接收到网络进程的响应头数据之后，发送commit navigation消息到渲染进程，发送commit navigation时会携带响应头、响应体等数据。
+
+      1.  渲染进程接收到Commit Navigation消息之后，便开始准备接收HTML数据，接收数据的方式是直接和网络进程建立数据管道 
+      2.  提交文档（Commit Navigation）
+         1. 渲染进程准备好之后，浏览器进程发出"提交文档"的消息，渲染进程接收到"提交文档"的消息后，会和网络进程建立传输数据的"管道"。（文档指的是URL请求的响应体数据）
+         2. 等文档数据传输完成之后，渲染进程会返回"确认提交"的消息给浏览器进程
+         3. 浏览器进程在收到"确认提交"的消息后，会更新浏览器状态，包括了安全状态、地址栏的URL、前进后退的历史状态，并更新web界面
+
+   6. 渲染阶段
+
 ## DNS解析
 
 1. 检查浏览器自身缓存中有没有解析过的这个域名对应的IP地址
@@ -1036,23 +1082,6 @@ window.onload = fn // => 所有资源加载完
 6. Sequence Number(顺序号码)
 7. Acknowledge Number(确认号码)
 
-- TLS连接https://www.cnblogs.com/Wayou/p/ssl_tls_handshake.html
-
-  - 客户端向服务端发送随机数Random1和客户端支持的密码套件和当前SSL版本
-- 服务端从客户端加密套件列表中选择一个，加密套件决定了后续加密及生成摘要的算法，生成Random2，两端的随机数会在后续生成对称密钥时使用，服务器将自己的证书下发给客户端，让客户端验证服务器的身份
-  - 客户端收到证书后才CA验证其合法性
-  - 验证合法后从证书取出公钥，生成随机数Random3
-    - 使用公钥非对称加密生成pre_master key
-  - 并将pre_master key发送服务器
-  - 服务端接收到pre_master key，用自己的私钥解出Random 3
-  - 此时服务端和客户端两端都有Random 1-3
-    - 两端使用相同的算法生成密钥，握手结束后的数据传输都使用此密钥进行对称加密
-  - 为何需要三个random
-    - 因为SSL/TSL握手过程数据明文传输，多个随机数种子生成的密钥不容易暴力破解
-- 客户端使用前面协商出来的密钥加密
-  
-- 服务端使用密钥解密，解密成功说明密钥一致。
-  
 - 三次握手
 
   1. 第一次握手，客户端发送syn包（Seq = x）到服务器，并进入SYN_SEND状态，等待服务器确认；
@@ -1067,75 +1096,96 @@ window.onload = fn // => 所有资源加载完
 
      采用三次握手的原因是为了防止失效的连接请求报文端突然又传送到主机B。因而产生错误。实现的连接请求报文是指：主机A发出的请求连接请求没有收到主机B的确认，于是经过一段确认时间后，主机A又重新向主机B发送请求连接，且建立成功，顺序完成数据传输。考虑这样一种特殊情况，主机A发送第一次的请求连接并没有丢失，而是因为网络节点导致延迟达到主机B，主机B以为是主机A又发起的新连接，于是主机B同意连接，并向主机A发回确认，但是此时主机A根本不理会，主机B就一直在等待主机A发送数据，导致主机B的资源浪费。
 
-  ## 发起HTTP连接
 
-  1. 请求报文
+## 浏览器缓存
 
-     1. 请求行： GET /index.html HTTP/1.1 
+1. 请求报文
 
-        1. 主要包括请求方法，url，http协议
+   1. 请求行： GET /index.html HTTP/1.1 
 
-     2. 请求头：（key,value形式）
+      1. 主要包括请求方法，url，http协议
 
-        1. User-Agent：产生请求的浏览器类型。
+   2. 请求头：（key,value形式）
 
-        2. Accept：客户端可识别的内容类型列表。
+      1. User-Agent：产生请求的浏览器类型。
 
-        3. Host：主机地址
+      2. Accept：客户端可识别的内容类型列表。
 
-           ​      <img src="C:\Users\Darren\Desktop\16a634c93ecabe3a.png" alt="16a634c93ecabe3a" style="zoom:300%;" />
+      3. Host：主机地址
 
-     3. 请求正文，数据存储
+         ​      <img src="C:\Users\Darren\Desktop\16a634c93ecabe3a.png" alt="16a634c93ecabe3a" style="zoom:300%;" />
 
-  2. HTTP缓存
+   3. 请求正文，数据存储
 
-     1. 缓存的规则
+2. HTTP缓存
 
-        1. 强制缓存：当缓存数据库中有客户端需要的数据，客户端直接将数据从其中拿出来使用（当前数据未失效），当缓存服务器没有需要的数据时，客户端才会向服务端请求。
+   1. 缓存的规则
 
-        2. 协商缓存：客户端会先从缓存数据库拿到一个缓存的标识，然后向服务端验证标识是否失效，如果没有失效服务端会返回304，这样客户端可以直接去缓存数据库拿出数据。如果失效，服务端返回新的数据
+      1. 强制缓存：当缓存数据库中有客户端需要的数据，客户端直接将数据从其中拿出来使用（当前数据未失效），当缓存服务器没有需要的数据时，客户端才会向服务端请求。
 
-        3. 强制缓存的优先级高于协商缓存，如果两种协商皆存在，且强制缓存命中目标，则协商缓存不再验证标识。
+      2. 协商缓存：客户端会先从缓存数据库拿到一个缓存的标识，然后向服务端验证标识是否失效，如果没有失效服务端会返回304，这样客户端可以直接去缓存数据库拿出数据。如果失效，服务端返回新的数据
 
-        4. 如何判断缓存是否失效。
+      3. 强制缓存的优先级高于协商缓存，如果两种协商皆存在，且强制缓存命中目标，则协商缓存不再验证标识。
 
-        5. 对于强制缓存，服务器响应的header字段中会用两个字段来表明----Expires 和 Cache-Control。
+      4. 如何判断缓存是否失效。
 
-           1. Expires: Expires的值为服务端返回的数据到期时间。当再次请求时的请求时间小于返回的此时间，则直接使用缓存数据。由于服务端时间和客户端时间可能有误差，这也将导致缓存命中的误差，另一方面，Expires是HTTP1.0的产物，故现在大多数使用Cache-Control替代。
-           2. Cache-Control: Cache-Control 有很多属性，不同的属性代表的意义也不同
-              1. private: 客户端可以缓存
-              2. public： 客户端和代理服务器都可以缓存
-              3. max-age=t: 缓存内容将在t秒后过期
-              4. no-cache: 需要使用协商缓存来验证缓存数据
-              5. no-store: 所有内容都不会缓存。
+      5. 对于强制缓存，服务器响应的header字段中会用两个字段来表明----Expires 和 Cache-Control。
 
-        6. 协商缓存需要进行对比判断是否可以使用缓存。浏览器第一次请求数据时，服务器会将缓存标识与数据一起响应给客户端，客户端将它们备份至缓存中，再次请求时，客户端会将缓存中的标识发给服务器，服务器根据此标识判断，若未失效，返回304状态码，浏览器拿到此状态码可以直接使用缓存数据。
+         1. Expires: Expires的值为服务端返回的数据到期时间。当再次请求时的请求时间小于返回的此时间，则直接使用缓存数据。由于服务端时间和客户端时间可能有误差，这也将导致缓存命中的误差，另一方面，Expires是HTTP1.0的产物，故现在大多数使用Cache-Control替代。
+         2. Cache-Control: Cache-Control 有很多属性，不同的属性代表的意义也不同
+            1. private: 客户端可以缓存
+            2. public： 客户端和代理服务器都可以缓存
+            3. max-age=t: 缓存内容将在t秒后过期
+            4. no-cache: 需要使用协商缓存来验证缓存数据
+            5. no-store: 所有内容都不会缓存。
 
-           1. Last-Modified: 服务器在响应请求时，会告诉浏览器资源的最后修改时间
+      6. 协商缓存需要进行对比判断是否可以使用缓存。浏览器第一次请求数据时，服务器会将缓存标识与数据一起响应给客户端，客户端将它们备份至缓存中，再次请求时，客户端会将缓存中的标识发给服务器，服务器根据此标识判断，若未失效，返回304状态码，浏览器拿到此状态码可以直接使用缓存数据。
 
-              1. if-Modified-Since: 浏览器再次请求服务器的时候，请求头会包含此字段，后面跟着在缓存中获得的最后修改时间，服务端收到此请求头发现有if-Modified-Since，则与被请求资源的最后修改时间进行对比，如果一致，返回304和响应文报头。
-                 1. 如果被修改，返回新的文件。200；OK
-                 2. 如果没有被修改，服务器返回304 Not Modified
-              2. if-Unmodified-Since: 从某个时间段算起，是否文件没有被修改
+         1. Last-Modified: 服务器在响应请求时，会告诉浏览器资源的最后修改时间
 
-           2. 缺点： 如果在服务器上，一个资源被修改了，但其实际内容根本没发生改变。
+            1. if-Modified-Since: 浏览器再次请求服务器的时候，请求头会包含此字段，后面跟着在缓存中获得的最后修改时间，服务端收到此请求头发现有if-Modified-Since，则与被请求资源的最后修改时间进行对比，如果一致，返回304和响应文报头。
+               1. 如果被修改，返回新的文件。200；OK
+               2. 如果没有被修改，服务器返回304 Not Modified
+            2. if-Unmodified-Since: 从某个时间段算起，是否文件没有被修改
 
-              会因为Last-Modified时间匹配不上而返回了整个文件给客户端。
+         2. 缺点： 如果在服务器上，一个资源被修改了，但其实际内容根本没发生改变。
 
-           3. 为了解决这个问题，HTTP1.1推出了Etag，服务器响应请求时，通过此字段告诉浏览器当前资源在服务器生成的唯一标识（生成规则由服务器决定）
+            会因为Last-Modified时间匹配不上而返回了整个文件给客户端。
 
-              1. If-None-Match: 再次请求服务器时，浏览器的请求报文头部会包含此字段，后面的值为在缓存中获取的标识，服务器收到此次报文后发现if-None-Match则与被请求资源的唯一标识进行对比。
-                 1. 不同：说明资源被改动过，则响应整个资源内容，返回状态码200.
-                 2. 相同：说明资源没有被修改过。
-              2. 缺点：实际应用中由于Etag的计算是使用算法来得出的，而算法会占用服务端计算的资源，所有的服务端资源都是宝贵的，所以很少使用Etag了。
+         3. 为了解决这个问题，HTTP1.1推出了Etag，服务器响应请求时，通过此字段告诉浏览器当前资源在服务器生成的唯一标识（生成规则由服务器决定）
 
-        7. 优点：
+            1. If-None-Match: 再次请求服务器时，浏览器的请求报文头部会包含此字段，后面的值为在缓存中获取的标识，服务器收到此次报文后发现if-None-Match则与被请求资源的唯一标识进行对比。
+               1. 不同：说明资源被改动过，则响应整个资源内容，返回状态码200.
+               2. 相同：说明资源没有被修改过。
+            2. 缺点：实际应用中由于Etag的计算是使用算法来得出的，而算法会占用服务端计算的资源，所有的服务端资源都是宝贵的，所以很少使用Etag了。
 
-           1. 减少了冗余的数据传递，节省了宽带流量
-           2. 减少了服务器的负担，大大提高了网站性能
-           3. 加快了客户端加载网页的数据，这也正是HTTP缓存属于客户端缓存的原因
+      7. 优点：
+
+         1. 减少了冗余的数据传递，节省了宽带流量
+         2. 减少了服务器的负担，大大提高了网站性能
+         3. 加快了客户端加载网页的数据，这也正是HTTP缓存属于客户端缓存的原因
+
+## SSL/TLS连接
+
+- TLS连接https://www.cnblogs.com/Wayou/p/ssl_tls_handshake.html
+
+  - 客户端向服务端发送随机数Random1和客户端支持的密码套件和当前SSL版本
+- 服务端从客户端加密套件列表中选择一个，加密套件决定了后续加密及生成摘要的算法，生成Random2，两端的随机数会在后续生成对称密钥时使用，服务器将自己的证书下发给客户端，让客户端验证服务器的身份
+  - 客户端收到证书后才CA验证其合法性
+  - 验证合法后从证书取出公钥，生成随机数Random3
+    - 使用公钥非对称加密生成pre_master key
+  - 并将pre_master key发送服务器
+  - 服务端接收到pre_master key，用自己的私钥解出Random 3
+  - 此时服务端和客户端两端都有Random 1-3
+    - 两端使用相同的算法生成密钥，握手结束后的数据传输都使用此密钥进行对称加密
+  - 为何需要三个random
+    - 因为SSL/TSL握手过程数据明文传输，多个随机数种子生成的密钥不容易暴力破解
+- 客户端使用前面协商出来的密钥加密
+- 服务端使用密钥解密，解密成功说明密钥一致。
 
 ## 服务器处理并返回HTTP报文
+
+JavaScript文件的下载过程会阻塞DOM解析吗？
 
 ## 浏览器解析渲染页面 
 
@@ -1144,6 +1194,8 @@ window.onload = fn // => 所有资源加载完
    1. 提交文档过程中，网络进程边下载边提交给渲染进程
 
    2. 渲染进程接收到第一批数据，就开始做DOM解析了
+
+   3. Chrome浏览器做了很多优化，预解析操作，当渲染引擎接收到字节流文件之后，会开启一个预解析线程，用来分析HTML文件中包含的JavaScript、CSS等相关文件之后，预解析线程会提前下载这些文件
 
       ```html
       当服务器接收到HTML页面的第一批数据时，DOM解析器就开始工作了，在解析过程中，如果遇到了JS脚本，如下所示
@@ -1155,7 +1207,7 @@ window.onload = fn // => 所有资源加载完
           </body>
       </html>
       
-      那么DOM解析器会先执行JavaScript脚本，执行完成之后，再继续往下解析
+      那么DOM解析器会先执行JavaScript脚本，执行完成之后，再继续往下解析（内嵌JavaScript脚本，暂停DOM的解析）
       
       第二种情况
       <html>
@@ -1189,25 +1241,25 @@ window.onload = fn // => 所有资源加载完
 
       
 
-   3. 浏览器不能直接理解HTML数据，所以第一步需要将其转换为浏览器能够理解的DOM树结构（渲染进程将HTML内容转换为能够读懂的DOM结构）
+   4. 浏览器不能直接理解HTML数据，所以第一步需要将其转换为浏览器能够理解的DOM树结构（渲染进程将HTML内容转换为能够读懂的DOM结构）
 
-   4. 渲染引擎将CSS样式表转换为浏览器可以理解的stylesheets。
+   5. 渲染引擎将CSS样式表转换为浏览器可以理解的stylesheets。
 
-   5. 生成DOM树后，还需要根据CSS样式表，来计算DOM树的所有节点的样式；
+   6. 生成DOM树后，还需要根据CSS样式表，来计算DOM树的所有节点的样式；
 
-   6. 最后计算DOM元素的布局信息，使其都保存在布局树中
+   7. 最后计算DOM元素的布局信息，使其都保存在布局树中
 
-   7. 对布局树进行分层，并生成分层树
+   8. 对布局树进行分层，并生成分层树
 
-   8. 为每个图层生成绘制列表，并将其提交到合成线程
+   9. 为每个图层生成绘制列表，并将其提交到合成线程
 
-   9. 合成线程将图层分成图块，并在光栅化线程池中将图块转化成位图
+   10. 合成线程将图层分成图块，并在光栅化线程池中将图块转化成位图
 
-   10. 合成线程发送绘制图块命令DrawQuad给浏览器进程
+   11. 合成线程发送绘制图块命令DrawQuad给浏览器进程
 
-   11. 浏览器进程根据DrawQuad命令生成页面，并显示到显示器上
+   12. 浏览器进程根据DrawQuad命令生成页面，并显示到显示器上
 
-   12. 使用CSS transform来实现动画效果，这样避免重排和重绘阶段，直接在非主线程上执行合成动画操作。这样的效率是最高的。
+   13. 使用CSS transform来实现动画效果，这样避免重排和重绘阶段，直接在非主线程上执行合成动画操作。这样的效率是最高的。
 
 2. 等文档数据传输完成之后，渲染进程会返回"确认提交"的消息给浏览器进程
 
@@ -1333,7 +1385,25 @@ window.onload = fn // => 所有资源加载完
 
 # Seq(序列号),Ack(确认号),Syn(同步序列号)
 
+# HTTP1.1
+
+缺点
+
+1. 队头阻塞：TCP连接上只能发送一个请求，请求的前面未完成前，后续的请求都在排队等待
+
+2. 多个TCP连接
+
+   虽然HTTP1.1管线化可以支持请求并发，但是浏览器很难实现，chrome，firefox等都禁用了管线化。所以1.1版本请求并发依赖于多个TCP连接，建立TCP连接成本高，还会存在启动慢的问题
+
+3. 头部冗余，采用文本格式
+
+   HTTP1.1版本是采用文本格式，首部未压缩，而且每一个请求都会带上cookie，user-agent等完全相同的首部
+
 # HTTP2.0
+
+ https://mp.weixin.qq.com/s/GICbiyJpINrHZ41u_4zT-A 
+
+ https://http2.akamai.com/demo 
 
 1. 请求头压缩算法HPACK（ 通讯双方各自cache一份header fields表，既避免了重复header的传输，又减小了需要传输的大小）
 2. 新的二进制格式
@@ -2069,4 +2139,137 @@ vue-router源码：
    1. 请求方法为get/head/post
    2. post请求的Content-Type并非application/x-www-urlencoded，multipart/form-data，或text/plain;
    3. 请求设置了自定义的header字段（可允许：Accept, Accept-Language，Content-Language, Content-Type）;
+
+
+
+# 表单跨域
+
+1. enctype: 'application/x-www-form-urlencoded'、'multipart/form-data'、'text/plain';
+2.  https://moxo.io/blog/2016/11/12/html-form-submit-urlencode-and-multipart-formdata/ 
+
+
+
+# aysnc和promise的区别
+
+1.  https://v8.js.cn/blog/fast-async/ 
+
+
+
+# 观察者模式
+
+观察者模式指的是一个对象（Subject）维持一系列依赖于它的对象（Observer），当有关状态发生变更时，Subject对象则通知一系列Observer对象进行更新
+
+在观察者模式中，Subject对象拥有添加、删除和通知等一系列Observer的方法，而Observer拥有更新方法等。
+
+在Subject对象添加了一系列Observer对象之后，Subject对象则维持着这一系列Observer对象，当有关状态发生变更时，Subject对象则会通知这一系列Observer对象进行更新
+
+1. ```javascript
+   function Subject() {
+       this.observers = [];
+   }
+   
+   Subject.prototype = {
+       constructor: Subject,
+       add(observer) {
+           this.observes.push(observer);
+       },
+       remove(observer) {
+           const observers = this.observers;
+           if (Array.isArray(observers)) {
+           	for (let i = 0; i < observers.length) {
+                   if (observers[i] === observer) {
+                       observers.splice(i, 1);
+                   }
+               }
+           }
+       },
+       notify() {
+           const observers = this.observers;
+           for (let i = 0; i < observers.length; i ++) {
+               observers[i].update()
+           }
+       }
+   }
+   
+   
+   function Observer(name) {
+       this.name = name;
+   }
+   
+   Observer.prototype = {
+       constructor: Observer,
+       update() {
+           console.log(`my name is ${this.name}`)
+       }
+   }
+   
+   const sub = new Subject();
+   let ob1 = new Observer('ob1');
+   let ob2 = new Observer('ob2');
+   sub.add(ob1);
+   sub.add(ob2);
+   sub.notify();
+   
+   ```
+
+
+
+# JS运行时V8做的一系列事
+
+1.  https://ui.dev/ultimate-guide-to-execution-contexts-hoisting-scopes-and-closures-in-javascript/?spm=ata.13261165.0.0.2d8e16798YR8lw 
+
+2. 创建函数执行上下文，每个函数上下文都有Creation和Execution阶段。
+
+   在Create阶段，JavaScript引擎将
+
+   1. 创建一个全局对象
+   2. 创建一个名为'this'的对象
+   3. 设置变量和函数的存储空间
+   4. 将任何函数声明放入内存中，为变量声明分配默认值undefined
+
+   ```javascript
+   var name = 'Darren';
+   var handle = '@email.com'
+   function getUser() {
+       return {
+           name: name,
+           handle: handle,
+       }
+   }
+   
+   /*
+   Global Execution Context
+   Phase: Creation
+   
+   window: Golbal Object
+   this: window
+   name: undefined
+   handle: undefined
+   getUser: fn
+   */
+   ```
+
+3. 进入Execution阶段，JavaScript引擎便开始逐条执行代码，并将实值分配给已经存在于内存中的变量，undefined在Creation阶段为变量声明分配默认值的过程称为变量提升
+
+4. 如遇到函数执行，JavaScript引擎都会
+
+   1. 创建一个参数对象
+   2. 创建一个名为this的对象
+   3. 设置变量和函数的存储空间
+   4. 在将任何函数声明放入内存中，为变量声明分配默认值undefined
+
+   ```javascript
+   /*
+   getUser Execution Context
+   phase: Creation
+   arguments: {
+       length: 0,
+   }
+   this: window
+   */  
+   ```
+
+5. 实际上，JavaScript引擎会创建所谓的'执行堆栈'（也被称为调用堆栈）。每当调用函数时，都会创建一个新的执行上下文并将其添加到执行堆栈中，每当完成Creation和Execution阶段之后，它就会从执行堆栈中弹出。如果当前执行函数的执行上下文中不存在变量，JavaScript引擎将一步一步检查每个单独的父执行上下文的过程为Scope Chain。任何子执行上下文都可以引用其父执行上下文中任何变量，反之则不行。
+
+
 
