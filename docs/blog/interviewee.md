@@ -2314,6 +2314,51 @@ vue-router源码：
    }
    ```
 
+5. ```javascript
+   function curry(fn, args) {
+       length = fn.length;
+       args = args || [];
+       return function() {
+           var _args = args.slice(0);
+           var arg;
+           var i;
+           for (let i = 0; i < arguments.length; i ++) {
+               arg = arguments[i]
+               _arg.push(arg);
+           }
+           if (_args.length < length) {
+               return curry.call(this, fn, _args);
+           } else {
+               return fn.apply(this, _args);
+           }
+       }
+   }
+   ```
+
+6. ```javascript
+   /*
+   * 将函数柯里化
+   * @param fn 待柯里化的原函数
+   * @param len 所需的参数个数，默认为原函数的参数个数
+   *
+   */
+   function curry(fn, len = fn.length) {
+       return _curry.call(this, fn, len)
+   }
    
+   /*
+   * 中转函数
+   * @param fn 待柯里化的原函数
+   * @param len 所需的参数个数
+   * @param args 已接收的参数列表
+   */
    
+   function _curry(fn, len, ...args) {
+       return function (...params) {
+           let _args = [...args, ...params];
+       }
+   }
+   ```
+
+7. 
 
