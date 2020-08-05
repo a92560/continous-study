@@ -1899,11 +1899,157 @@ vue-router源码：
 # Vue原理
 
 1. 广度优先遍历还是深度优先遍历？为什么
+   
    1. 是广度优先算法
 2. virtual dom 解决的问题
    1. virtual dom是什么
+   
+      1. js对象
+   
+         ```javascript
+         var virtualDom = {
+             tag: 'div',
+             props: {
+                 attr: {
+                     id: 'app'
+                 }
+             },
+             children: [
+                 {
+                     tag: 'p',
+                     props: {},
+                     children: ['test']
+                 }
+             ]
+         }
+         ```
+   
+         
+   
    2. virtual dom的好处
+   
+      1. 渲染引擎、JS引擎相互独立，但又工作在同一线程（主线程），JS代码调用DOM api，必须挂起JS引擎，转换传入参数，激活渲染引擎，DOM重绘后再转换可能有的返回值，最后激活js引擎并继续执行若有频繁的 DOM api 调用，且有的浏览器厂商不做'批量处理'优化，可能出现强制同步布局的代码
+   
+      2. vue 1.0 是没有引入虚拟DOM，且vue1.0的watcher级别是组件data的一个key对应一个watcher，如果对应组件的data的key更新，则整个全部更新。这也是vue1.0项目支撑不了大项目的原因
+   
+      3. vue2.0引入虚拟DOM，但是有人说vue2.0的watcher级别已经是一个组件对应一个watcher，但有人又说，那如果组件data的任一key更新的时候，还不是要更新整个页面，这就是vue为什么要引入virtual dom的原因，首次vue渲染，new Vue的时候，我们会执行  _init方法，对于平常我们的vue/cli项目，大概执行 _init函数的流程就是将new Vue的options合并配置，然后最后执行 $mount函数
+   
+      4. 执行$mount函数，然后$mount函数的作用是主要判断el是不是html/body节点，如果是编译器版本，则根据template生成render函数。第二个$mount函数主要执行mountComponent方法
+   
+      5. mountComponent方法主要调用beforeMount钩子，然后定义updateComponent函数，
+   
+         ```javascript
+         const updateComponent = () => {
+             vm._update(vm._render(), hydrating)
+         }
+         // 然后new Wathcer 为全局的一个渲染watcher
+         new Watcher(vm, updateComponent, noop, {
+             before() {
+                 if (vm._isMounted && !vm._isDestroyed) {
+                 	callHook(vm, 'beforeUpdate')
+                 }
+             }
+         })
+         ```
+   
+      6. new Watcher之后，执行constructor的逻辑，发现第二个函数为参数的时候，执行watcher的get方法
+   
+         ```javascript
+         if (typeof expOrFn === 'function') {
+             this.getter = expOrFn;
+         } else {
+             // 'a.b.c'
+             
+         }
+         
+         get() {
+             pushTarget(this);
+             // 执行updateComponent函数
+             value = this.getter.call(vm, vm);
+         }
+         
+         ```
+   
+      7. 执行 _update 方法，首先调用 _render方法，调用的时候，会收集模板的key，这个时候Watcher的targetStack里面存有一个渲染watcher，然后对应的data的key，会调用dep.depend()方法
+   
+         ```javascript
+         class Dep{
+             constructor() {
+                 this.subs = [];
+             }
+             
+             addSub(sub: Watcher) {
+                 this.subs.add(sub)
+             }
+             
+             depend() {
+                 if (Dep.target) {
+                     Dep.target.append(this);
+                 }
+             }
+             
+             notify() {
+                 const subs = this.subs.slice();
+                 for (let i = 0; l = subs.length; i < l; i ++) {
+                     subs[i].update();
+                 }
+             }
+         }
+         
+         class Watcher {
+             addDep (dep: Dep) {
+                 this.newDepIds.push(id);
+                 this.newDeps.push(dep);
+                 if (!this.depIds.has(id)) {
+                     dep.addSub(this)
+                 }
+             }
+             
+             update() {
+                 if (this.lazy) {
+                     this.dirty = true;
+                 } else if (this.sync) {
+                     this.run();
+                 } else {
+                     queueWatcher(this)
+                 }
+             }
+         }
+         ```
+         
+      8. dep和watcher是多对多的结构，因为data里面的一个key可能对应对应两个watcher，即一个父组件的data当成props传到了子组件，当data里的这个key更新的时候，对应的两个watcher都要更新，即调用watcher.update方法
+      
+      9. ```javascript
+         // schedule.js
+         // 定义了一个queue
+         // 将需要更新的watcher全部push到queue
+         // flushSchedulerQueue
+         // 真正执行watcher.update() 方法
+         // nextTick函数 next-tick.js 在文件里定义了一个callbacks
+         export function nextTick(cb, ctx) {
+             let _resolve;
+             callbacks.push(() => {
+                 if (cb) {
+                     try {
+                         cb.call(ctx);
+                     } catch(e) {
+                         handleError(e, ctx, 'nextTick')
+                     }
+                 } else if (_reslove) {
+                     _resolve(ctx);
+                 }
+             })
+             if (!pending) {
+                 pending = true;
+                 timerFunc();
+             }
+         }
+         ```
+      
+      10. 
+   
 3. MVVM 和 MVC的比较
+   
    1. MVVM怎么实现的
 
 # Vue生命周期
