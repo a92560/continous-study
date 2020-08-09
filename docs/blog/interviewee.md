@@ -1539,7 +1539,77 @@ var cat = (function (name) {
     return obj
 })('cat1')
 console.log("cat", cat)
+
+function _new(func, ...args) {
+    // 1.创建实例对象
+    let obj = {};
+    obj.__proto__ = Func.prototype;
+    // 2.把方法执行，让里面的this是实例对象
+    let result = func.apply(obj, args);
+    // 3. 分析返回结果
+    if (result !== null && /^(object|function)$/.test(typeof result)) {
+        return result
+    }
+    return obj;
+}
 ```
+
+# 手写call
+
+```javascript
+~function() {
+    function change(ctx, ...args) {
+        // this => func
+       	ctx = ctx == undefined ? window : ctx;
+        const isObject = /^(function|object)$/.test(typeof ctx);
+        const isSymbol = /^(symbol|bigint)$/.test(typeof ctx);
+        // 传的是基本类型值
+        if (!isObject) {
+            if (isSymbol) {
+                ctx = Object(ctx)
+            } else {
+                ctx = new ctx.__proto__.constructor(ctx);
+            }
+            
+        }
+        const key = Symbol('key');
+        ctx[key] = this;
+        const result = ctx[key](...args);
+        delete ctx[key];
+        return result;
+    }
+}()
+```
+
+
+
+# 手写bind
+
+```javascript
+~function () {
+    function bind(ctx, ...args) {
+        // this => func
+       	ctx = ctx == undefined ? window : ctx;
+        const isObject = /^(function|object)$/.test(typeof ctx);
+        const isSymbol = /^(symbol|bigint)$/.test(typeof ctx);
+        // 传的是基本类型值
+        if (!isObject) {
+            if (isSymbol) {
+                ctx = Object(ctx)
+            } else {
+                ctx = new ctx.__proto__.constructor(ctx);
+            }
+            
+        }
+        return (...innerArgs) => {
+            this.apply(ctx, args.concat(innerArgs));
+        }
+    }
+}()
+
+```
+
+
 
 # 箭头函数
 
@@ -1558,6 +1628,38 @@ console.log("cat", cat)
        }
    }
    ```
+
+# 深拷贝
+
+```javascript
+/*
+ * JSON.stringify
+ * 1. 正则 -> 空对象
+ * 2. BigInt -> 报错
+ * 3. symbol/undefined/function -> 直接没了
+ *
+ */
+
+function cloneDeep(obj) {
+    // 验证类型
+    if (obj === null) {
+        return null;
+    }
+    if (obj instanceOf RegExp) {
+        return new RegExp(obj);
+    }
+    if (obj instanceof Date) {
+        return new Date(obj);
+    }
+    let clone = new obj.__proto__.constructor;
+    Object.keys(obj).forEach((it) => {
+        clone[key] = cloneDeep(obj[key]);
+    })
+    return clone;
+}
+```
+
+
 
 
 
@@ -2579,7 +2681,125 @@ a.x = a = { n: 2 };
  * 规范对象'.只能取值或赋值
  */
 
+var x = 1;
+function func(x, y = function anonymous1() { x = 2}) {
+    x = 3;
+    y();
+    console.log(x);
+}
+func(5);
+console.log(x)
+/* EC(G)
+ * VO(G)
+ *  x -> 1
+ *  func -> AAAFFF00
+ * 堆(AAAFFF00)
+ * [[scope]]: EC(G)
+ * 形参： x,y
+ * `函数代码字符串`
+ * 
+ * 堆(AAAFFF11)
+ * [[scope]]
+ * 执行函数
+ * EC(func)
+ * AO(func)
+ * 作用域链：<EC(func), EC(G)>
+ * 形参赋值： x = 5 -> x = 3 -> x = 2; y = anonymous1
+ * 执行函数anonymous
+ * EC(anonymous)
+ * AO(anonymous)
+ * 作用域链：<EC(anonymous), EC(func)>
+ * 形参赋值： 
+ * x = 2; 如果自己没有这个变量，往上找。
+ * 当前函数上下文执行完成之后不被释放的
+ *
+ *
+ * 
+ */
+
+var x = 1;
+function func(x, y = function anonymous() {x=2}) {
+    var x = 3;
+    y();
+    console.log(x);
+}
+func(5);
+console.log(x);
+
+/*
+ * 有一种情况也会产生块级作用域
+ * 1. 函数有形参复赋值了默认值
+ * 2. 函数体中单独声明了某个变量
+ * 这样在函数声明的时候，会产生两个上下文
+ * 第一个： 函数执行形成的函数私有上下文
+ * 第二个： 函数体大括号包起来的是一个块级上下文EC（BLOCK）
+ *
+ */
+/*
+ * EC(G)
+ * x = 1
+ * func = AAAFFF00
+ * 	EC(func)函数私有上下文
+ *  [[scope]]: <EC(func), EC(G)>
+ * 	形参赋值 x -> 5 ; y -> anonymous([[scope]]: EC(func))
+ * 	EC(BLOCK)
+ * 	在代码没有执行之前，变量提升, 我们会把EC(func)中的值也给它一份 x = 5
+ *  x -> undefined
+ *  y() 不是块级的，去作用链上找。 EC(func)
+ *  EC(anonymous)
+ *  [[scope: <EC(anonymous), EC(func)>]]
+ *  x = 2 修改的是EC(func)中的2
+ */
+
+const add = (x) => x + 1;
+const mul = (x) => x * 3;
+const div = (x) => x / 2;
+function compose (...funcs) {
+    return function (...args) {
+        if (funcs.length === 0) {
+            return args
+        }
+        if (funcs.length === 1) {
+            return funcs[0](...args)
+        }
+        let n = 0;
+        return funcs.reduce((a, b) => {
+            n ++;
+            if (n === 1) return b(a(...args))
+            return b(a)
+        })
+    }
+}
+
+let result = compose()(0, 1);
+console.log(result);
+
+result = compose(add)(0, 1)
+console.log(result)
+
+result = compose(add, mul, div)(0, 1);
+console.log(result)
+
+dialog.vue
+showDialog() {
+    this.visible = true;
+}
+created() {
+    window.showDialog = showDialog;
+}
 ```
+
+# 转正答辩
+
+1. 你正在做的项目，你有没有看过哪些类似项目的源码
+
+2. 哪些模块是你做的（三个实习生做同一个项目），你的主要贡献点在哪？
+
+3. 你从中有哪些收获？遇到技术难点的时候，怎么和组内其他人交流？
+
+4. 整个暑期实习期间，你最大的收获是什么
+5.  https://blog.csdn.net/haoshidai/article/details/52577823 
+6.  https://zhuanlan.zhihu.com/p/136556515 
 
 
 
