@@ -2787,6 +2787,47 @@ showDialog() {
 created() {
     window.showDialog = showDialog;
 }
+
+function instanceOf(left, right) {
+    if (right === null) {
+        return false
+    }
+    const rightProto = right.prototype;
+    let proto = left.__proto__;
+    while (proto) {
+        if (proto === rightProto) {
+            return true;
+        }
+        if (proto == null) {
+            return false;
+        }
+        proto = proto.__proto__;
+    }
+    return false;
+}
+
+class A{}
+class B extends A{}
+class C{}
+const b = new B();
+console.log(instanceOf(b, B));
+console.log(instanceOf(b, A));
+console.log(instanceOf(b, C));
+
+function _new(func, ...args) {
+    // 创建实例对象
+    const obj = {};
+    // 让实例对象的__proto__ 指向 func.prototype
+    obj.__proto__ = func.prototype;
+    // 或者 const obj = Object.create(func.prototype);
+    // 把方法执行 让this执行实例对象
+    const result = func.apply(obj, args);
+    const isObject = (result !== null && /^(funciton|object)$/.test(typeof result));
+    if (isObject) {
+        return result
+    }
+    return obj;
+} 
 ```
 
 # 转正答辩
