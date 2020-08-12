@@ -2844,3 +2844,119 @@ function _new(func, ...args) {
 
 
 
+# LeetCode
+
+```javascript
+// 自己实现toLowerCase
+// A: 65 a: 97 相差32
+// 获取字符的ascii码： str.charCodeAt() 将ascii码转换成字符串 将ascii码转成字符串 String.fromCharCode(ascii码)
+const toLowerCase = (str) => {
+    if (!str) {
+        return '';
+    }
+    let ret = '';
+    const strLen = str.length;
+    for (let i = 0; i < strLen; i ++) {
+        const code = str.charCodeAt(i);
+        if (code >= 65 && code <= 90) {
+            ret += String.fromCharCode(code + 32);
+        } else {
+            ret += str[i];
+        }
+    }
+    return ret;
+}
+// 正则
+const toLowerCase = (str) => {
+    return str.replace(/[A-Z]/g, (item) => {
+        return String.fromCharCode(item.charCodeAt() + 32)
+    })
+}
+// 二分查找
+// 数组为升序的
+var search = (nums, target) => {
+    const numsLen = nums.length;
+    if (numsLen === 1) {
+    	if (nums[0] === target) {
+            return 0;
+        }
+        return -1;
+    }
+    if (numsLen === 0 || target > nums[numsLen - 1]) {
+        return -1;
+    }
+    let left = 0;
+    let right = numsLen - 1;
+    while (right >= left) {
+        let mid = parseInt(((left + right) / 2), 10);
+        // 取出中位数
+        // target比中位数大
+        if (target > nums[mid]) {
+            left = ++mid;
+        }
+        // target比中位数小
+        if (target < nums[mid]) {
+            right = --mid;
+        }
+        // 相等
+        if (target === nums[mid]) {
+            return mid;
+        }
+    }
+    return -1;
+}
+
+// 给一非空的单词列表，返回前 k 个出现次数最多的单词。
+// https://leetcode-cn.com/problems/top-k-frequent-words/
+// 返回的答案应该按单词出现频率由高到低排序。如果不同的单词有相同出现频率，按字母顺序排序。
+const topKFrequent = (words, k) => {
+    let map = new Map();
+    words.forEach((word) => {
+        const num = map.get(word);
+        if (num) {
+            map.set(word, num + 1)
+        } else {
+            map.set(word, 1);
+        }
+    })
+    let nums = [...map].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    nums = nums.map(it => it[0]);
+    return nums.slice(0, k);
+}
+/*
+ *
+ * 
+ * 
+ */
+const topKFrequent = (words, k) => {
+    let arr = [];
+    const obj = {};
+    words.forEach((word) => {
+        if (obj[word]) {
+            obj[word] ++;
+        } else {
+            obj[word] = 1;
+        }
+    });
+    /* obj: {
+            'i': 2,
+            'love': 2,
+            'leetcode': 1,
+            'coding': 1,
+        };
+    */
+    let orderedWords = Object.keys(obj).sort((prev, next) => obj[next] - obj[prev]); // ['i', 'love', 'leetcode', 'coding']
+    let nums = orderedWords.map(word => obj[word]); // [2, 2, 1, 1];
+    new Set(nums).forEach(num => {
+        let matched = orderedWords.filter(word => num === obj[word]);
+        if (matched.length > 0) {
+            matched.sort();
+        }
+        arr = arr.concat(matched);
+    })
+    return arr.slice(0, k);
+}
+```
+
+
+
