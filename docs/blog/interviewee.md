@@ -1446,6 +1446,8 @@ JavaScript文件的下载过程会阻塞DOM解析吗？
 
  https://http2.akamai.com/demo 
 
+ [https://www.cnblogs.com/riwang/p/12370785.html#http2%e6%96%b0%e5%a2%9e%e9%a6%96%e9%83%a8%e5%8e%8b%e7%bc%a9header-compression%e9%87%87%e7%94%a8hpack%e7%ae%97%e6%b3%95](https://www.cnblogs.com/riwang/p/12370785.html#http2新增首部压缩header-compression采用hpack算法) 
+
 1. 请求头压缩算法HPACK（ 通讯双方各自cache一份header fields表，既避免了重复header的传输，又减小了需要传输的大小）
 2. 新的二进制格式
 3. 多路复用（信道复用）
