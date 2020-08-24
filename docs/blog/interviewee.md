@@ -3028,6 +3028,175 @@ const topKFrequent = (words, k) => {
 
  https://blog.csdn.net/qq2276031/article/details/106407647 
 
+```javascript
+function patch(oldVnode, vnode) {
+    if (sameVNode(oldVnode, vnode)) {
+        patchVnode(oldVnode, vnode)
+    } else {
+        const oEl = oldVnode.el; // oldVnode对应的真实元素节点
+        let parentEle = api.parentNode(oEl); // 真实元素的父节点
+        createEle(vnode) // 根据Vnode生成新元素
+        if (parentEle !== null) {
+            api.insertBefore(parentEle, vnode.el, api.nextSibling(oEl)); // 将新元素添加到父元素
+            api.removeChild(parentEle, oldVnode.el); // 移除以前的旧元素节点
+            oldVnode = null
+        }
+    }
+    
+    return vnode;
+}
+
+function sameVnode(a, b) {
+    return (
+    	a.key === b.key && (
+        	(
+            	a.tag === b.tag && // 元素的标签名  div span
+                a.isComment === b.isComment // 是否为注释节点 
+                isDef(a.data) === isDef(b.data) // data是否定义 data: { attr: { id: 'app'}, domProps: { disabled: false}}
+            	sameInputType(a, b)
+            ) || (
+    			isTrue(a.AsyncPlaceholder) &&
+        		a.asyncFactory === b.asyncFactory &&
+        		isUndef(b.asyncPlacehoder)
+    		)
+        )
+    )
+}
+```
+
+1. 如果两个节点都是一样的，那么就深入检查它们的子节点，如果两个节点不一样那就说明vnode完全被改变了，就可以直接替换oldVnode。
+2. diff是同层比较的。
+
+```javascript
+function patchVnode(oldVnode, vnode) {
+    if (oldVnode === vnode) {
+        return;
+    }
+    const elm = vnode.elm;
+    const oldCh = oldVnode.children;
+    const ch = vnode.children;
+    // 新vnode不是文本节点
+    if (inUndef(vnode.text)) {
+        // 都存在children的情况
+        if (isDef(oldCh) && isUndef(ch)) {
+            if (oldCh !== ch) updateChildren(elm, oldCh, ch)
+        } else if (isDef(ch)) {
+            // oldCh 不存在 ch存在
+            if (isDef(oldVnode.text)) nodeOps.setTextContent(elm, ''); // 清空oldVnode下的文本节点
+            addVnodes(elm, null, ch, 0, ch.length - 1)
+        } else if (isDef(oldCh)) {
+            // oldCh 存在 ch不存在
+            removeVnodes(oldch, 0, oldCh.length - 1)
+        } else if (isDef(oldVnode.text)) {
+            // 新节点text不存在 旧节点text存在
+            nodeOps.setTextContent(elm, '')
+        }
+    } else if (oldVnode.text !== vnode.text) {
+        // 新旧节点 文本内容不同
+        nodeOps.setTextContent(elm, vnode.text)
+    }
+}
+```
+
+## patchVnode
+
+ 1. 判断vnode是否文本节点
+
+    不是：
+
+    1. oldCh 和 ch都存在的情况， updateChildren(oldCh, ch)
+    2. oldCh不存在 和 ch存在 的情况 ，如果oldVnode有文本节点，清空，调用addVnodes
+    3. oldCh存在 和 ch不存在的情况， removeVnodes(oldCh)
+    4. oldVnode是文本节点， nodeOps.setTextContent(elm, '')
+
+    是：
+
+    1. oldVnode.text !== vnode.text ， nodeOps.setTextContent(elm, vnode.text)
+
+
+
+```javascript
+function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
+    let oldStartIdx = 0
+    let newStartIdx = 0
+    let oldEndIdx = oldCh.length - 1
+    let oldStartVnode = oldCh[0]
+    let oldEndVnode = oldCh[oldEndIdx]
+    let newEndIdx = newCh.length - 1
+    let newStartVnode = newCh[0]
+    let newEndVnode = newCh[newEndIdx]
+    let oldKeyToIdx, idxInOld, vnodeToMove, refElm
+
+    // removeOnly is a special flag used only by <transition-group>
+    // to ensure removed elements stay in correct relative positions
+    // during leaving transitions
+    const canMove = !removeOnly
+
+    if (process.env.NODE_ENV !== 'production') {
+      checkDuplicateKeys(newCh)
+    }
+
+    while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+      if (isUndef(oldStartVnode)) {
+        oldStartVnode = oldCh[++oldStartIdx] // Vnode has been moved left
+      } else if (isUndef(oldEndVnode)) {
+        oldEndVnode = oldCh[--oldEndIdx]
+      } else if (sameVnode(oldStartVnode, newStartVnode)) {
+        patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
+        oldStartVnode = oldCh[++oldStartIdx]
+        newStartVnode = newCh[++newStartIdx]
+      } else if (sameVnode(oldEndVnode, newEndVnode)) {
+        patchVnode(oldEndVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx)
+        oldEndVnode = oldCh[--oldEndIdx]
+        newEndVnode = newCh[--newEndIdx]
+      } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right
+        patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx)
+        canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm))
+        oldStartVnode = oldCh[++oldStartIdx]
+        newEndVnode = newCh[--newEndIdx]
+      } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
+        patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
+        canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm)
+        oldEndVnode = oldCh[--oldEndIdx]
+        newStartVnode = newCh[++newStartIdx]
+      } else {
+        if (isUndef(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
+        idxInOld = isDef(newStartVnode.key)
+          ? oldKeyToIdx[newStartVnode.key]
+          : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
+        if (isUndef(idxInOld)) { // New element
+          createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
+        } else {
+          vnodeToMove = oldCh[idxInOld]
+          if (sameVnode(vnodeToMove, newStartVnode)) {
+            patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
+            oldCh[idxInOld] = undefined
+            canMove && nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm)
+          } else {
+            // same key but different element. treat as new element
+            createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
+          }
+        }
+        newStartVnode = newCh[++newStartIdx]
+      }
+    }
+    if (oldStartIdx > oldEndIdx) {
+      refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm
+      addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue)
+    } else if (newStartIdx > newEndIdx) {
+      removeVnodes(oldCh, oldStartIdx, oldEndIdx)
+    }
+  }
+
+```
+
+## UpdateChildren
+
+1. oldStartVnode、oldEndVnode、newStartVnode、newEndVnode两两做比较，有四种比较方式，当其中两个能匹配上，那么真实dom中的相应节点会移到Vnode相应的位置
+   1. 
+
+
+
 ## DOM: a b c d e
 
 ## Old VNode: a b c d e f
