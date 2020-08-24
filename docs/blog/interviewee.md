@@ -2648,8 +2648,15 @@ vue-router源码：
    
    var addCurry = curry(add);
    addCurry(1)(2);
+   
+function curry(fn) {
+       const len = fn.length;
+       return function(...args) {
+           
+       }
+   }
    ```
-
+   
 3. curry的这种用途可以理解为：参数复用，本质上是降低通用性，提高适用性。
 
 4. ```javascript
