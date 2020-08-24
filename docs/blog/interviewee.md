@@ -1487,8 +1487,8 @@ JavaScript文件的下载过程会阻塞DOM解析吗？
    4. 客户端用公钥解密，并检验hash值通过后，两端利用randomC，randomS，randomP通过一定的算法生成session Key， 后续的报文将通过session Key对称加密进行传输。
 8. 验证对方身份的时候使用非对称加密，通信的时候使用对称加密。
    1. 客户端向服务端发起https请求。发送的信息主要是一个随机数1和客户端支持的密码套件（支持的加密算法和TLS版本）。
-      1. 密码套件决定了本次连接采用哪一种**对称加密算法（ DES，AES ）**，**密钥协商算法**，HMAC算法。
-      2. 密钥协商算法：
+      1. 密码套件决定了本次连接采用哪一种**密钥交换算法**、**签名算法**、**对称加密算法（ DES，AES ）**、**摘要算法**。
+      2. 密钥交换算法：
          1. RSA
             1. 客户端向服务器发起请求连接，服务器发送RSA密钥对应的公钥给客户端
             2. 客户端通过生成随机数生成器生成一个预备主密钥，用服务器的公钥加密并发送给服务端
@@ -1496,7 +1496,8 @@ JavaScript文件的下载过程会阻塞DOM解析吗？
          2. DH算法
             1. 静态
             2. 临时（EDH）可以预防前向安全性
-         3. 
+      3. 'ECDHE-RSA-AES256-GCM-SHA384'
+         1. 握手时使用ECDHE算法进行密钥交换，用RSA签名和身份认证，握手后的通信使用AES对称算法，密钥长度256位，分组模式是GCM，摘要算法SHA384用于消息认证和产生随机数
    2. 服务端响应请求，发送证书和随机数2和协商出的密码套件
    3. 客户端解析证书，由客户端的TLS完成，验证步骤主要如下
       1. 首先验证公钥是否有效
@@ -3207,6 +3208,17 @@ function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly
 - 第二步：
   - 无key的情况，直接创建新的Node插入到oldStartIdx的位置
   - 有key的情况，取newStartIdx里的值，到oldVNode里面找，如发现相同的b，调整真实的DOM Node，将DOM Node中的b移动到oldStartIdx指针对应的Node（a）的位置，将oldVNode中的b的key值赋值为undefined
+
+
+
+
+
+# CSS取消浮动
+
+1. 父级加overflow: hidden
+2. clear: left/right/both  margin失效
+3. 内墙法：
+   1. 浮动父元素新增同级兄弟元素 clear:both 。
 
 
 
