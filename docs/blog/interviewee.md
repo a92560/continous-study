@@ -3,6 +3,8 @@
 
 Document -> HTML -> body -> div (事件捕获) （从上往下）
 
+ https://blog.csdn.net/chenjuan1993/article/details/81347590 
+
 div 处于目标阶段
 
 div -> body -> HTML -> Document(事件冒泡) 
@@ -2649,6 +2651,8 @@ vue-router源码：
    var addCurry = curry(add);
    addCurry(1)(2);
    
+   ```
+
 function curry(fn) {
        const len = fn.length;
        return function(...args) {
@@ -3226,6 +3230,71 @@ function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly
 2. clear: left/right/both  margin失效
 3. 内墙法：
    1. 浮动父元素新增同级兄弟元素 clear:both 。
+
+
+
+# 面试
+
+## TODO(自我介绍)
+
+1. 名字/专业/大三
+2. 自己做过小项目
+3. 实习
+   1. 技术提升还是有的，代码规范/开发流程/
+   2. 怎么快速熟悉项目
+      1. 断点调试
+      2. 学会找问题
+      3. 遇到不熟的知识点，模仿
+   3. 氛围，学习动力， 找到不足，遇到场景多
+   4. 项目中遇到的坑 => 源码大多数都能解决
+   5. 项目中的优化 -> 优化点
+4. 项目技术栈
+   1. 活跃在社区
+   2. 学习源码，潜移默化的影响
+
+看的树
+
+红宝书->犀牛书->你不知道的js->http->https->vue
+
+对象数组key排序
+
+lodash的get函数
+
+16匹马算法
+
+XMLHttpRequest
+
+依赖收集
+
+1. data所有key都会被observe
+
+2. 但是只有在模板上出现的key才会被依赖收集
+
+3. 执行new Vue() => 如果没有render函数 => 生成render函数 =>将render函数赋值给vm._render (renderMixin做的事情)=> mountComponent => new Watcher() => getter => vm._udpate(vm._render, hydrating) => 
+
+   targetStack: [渲染Watcher]，访问模板中data对应的key，触发Object.defineProperty，触发dep
+
+   .depend。dep下的subs存储了对应渲染watcher；
+
+   下次该key更新的话，触发dep.notify();
+
+   执行渲染watcher，对应是异步的，一般情况 lazy: true(computed watcher) sync的话，立马执行watch 对应的key的回调函数，其他的queueWatcher,
+
+   
+
+
+
+React Hooks解决了什么问题~
+
+组件复用 HOC
+
+node.repalceChild(newNode, oldNode);
+
+
+
+
+
+
 
 
 
