@@ -1206,6 +1206,32 @@ window.onload = fn // => 所有资源加载完
          1. 减少了冗余的数据传递，节省了宽带流量
          2. 减少了服务器的负担，大大提高了网站性能
          3. 加快了客户端加载网页的数据，这也正是HTTP缓存属于客户端缓存的原因
+         
+      8. 三级缓存原理
+      
+         1. 先查找内存，如果内存中存在，从内存中加载
+      
+         2. 如果内存中未查找到，选择硬盘获取，如果硬盘中有，从硬盘中加载
+      
+         3. 如果硬盘中未找到，那就进行网络请求
+      
+         4. 加载到的资源分别缓存到硬盘和内存
+      
+         5.  小结：一般图片会用disk cache, js文件用memory cache 
+      
+         6.  当退出进程时，内存中的数据会被清空，而磁盘的数据不会 
+      
+         7. WebKit派生资源包含的类型主要如下：
+      
+            Javascript脚本（CachedScript）；
+      
+            CSS样式文本（CachedCSSStyleSheet）；
+      
+            图片（CachedImage）；
+      
+            字体（CachedFont）；
+      
+            XSL样式表（CachedXSLStyleSheet）；
 
 ## SSL/TLS连接
 
