@@ -97,7 +97,14 @@ addEventListener('click', funciton(){}, true) // 事件捕获  默认为false �
 我是daughter
 我是baby
 我是grandma
+
 ```
+
+ w3c规定了，任何发生在w3c事件模型中的事件，首是进入捕获阶段，直到达到目标元素，再进入冒泡阶段。 
+
+ 绑定在被点击元素的事件是按照代码的顺序发生的，其他非绑定的元素则是通过冒泡或者捕获的触发。按照W3C的标准，先发生捕获事件，后发生冒泡事件。所以事件的整体顺序是：非目标元素捕获 -> 目标元素代码顺序 -> 非目标元素冒泡。 
+
+绑定在被点击元素的事件是按照代码的顺序发生的，其他非绑定的元素则是通过冒泡或者捕获的触发。按照w3c的规定，先发生捕获事件，后发生冒泡事件，所以事件的整体顺序是：非目标元素捕获->目标元素代码 顺序-> 非目标元素冒泡
 
 ## 事件代理
 
@@ -1716,7 +1723,7 @@ function cloneDeep(obj) {
     if (obj === null) {
         return null;
     }
-    if (obj instanceOf RegExp) {
+    if (obj instanceof RegExp) {
         return new RegExp(obj);
     }
     if (obj instanceof Date) {
@@ -2928,7 +2935,27 @@ function _new(func, ...args) {
         return result
     }
     return obj;
-} 
+}
+
+function deepClone(target) {
+    if (target instanceof Date) {
+        return new Date(target)
+    }
+    if (target instanceof RegExp) {
+        return new Regexp(target);
+    }
+    if (typeof target !== 'object') {
+        return target;
+    }
+    if (target == null) {
+        return target;
+    }
+    const clone = new (Object.getPrototypeOf(target).constructor);
+    Object.keys(target).forEach(it => {
+        clone[it] = deepClone(target[it])
+    })
+    return clone;
+}
 ```
 
 # 转正答辩
@@ -3278,11 +3305,46 @@ function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly
    1. 活跃在社区
    2. 学习源码，潜移默化的影响
 
-看的树
+看的书
 
 红宝书->犀牛书->你不知道的js->http->https->vue
 
 对象数组key排序
+
+ https://blog.csdn.net/weixin_34224941/article/details/91431116 
+
+```javascript
+
+const keys = ['price', 'postage', 'sales']; // 传入要排序的 key，优先级从高到低
+const orders = [1, 1, -1];
+const arr1 = multiSort(arr, keys, orders)
+// arr1:
+const arr = [
+    {"name":"商品05","price":123,"sales":143,"postage":19},
+    {"name":"商品01","price":123,"sales":123,"postage":19},
+    {"name":"商品03","price":123,"sales":133,"postage":29},
+    {"name":"商品02","price":124,"sales":123,"postage":0},
+    {"name":"商品04","price":125,"sales":123,"postage":9}
+]
+function multiSort(arr, keys, orders) {
+    if (!keys) { return arr;}
+    if (!orders) {
+        orders = Array.from( { length: key.length }, () => 1);
+    }
+    return [...arr].sort((prev, next) => {
+        for (let i = 0; i < keys.length; i ++) {
+            if (perv[keys[i]] === next[keys[i]]) continue;
+            return (prev[keys[i]] - next[keys[i]]) * (orders[i] || 1);
+        }
+        // 全部相等
+        return 0;
+    })
+}
+
+
+```
+
+
 
 lodash的get函数
 
