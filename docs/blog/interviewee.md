@@ -2649,10 +2649,17 @@ vue-router源码：
    var addCurry = curry(add);
    addCurry(1)(2);
    
-function curry(fn) {
+   ```
+
+function curry(fn, ...args = []) {
        const len = fn.length;
-       return function(...args) {
-           
+       return function() {
+           let args = args.slice(0);
+           args = args.concat([...arguments]);
+           if (args.length < len) {
+               return curry.call(this, fn, args);
+           }
+           return fn.apply(this, args);
        }
    }
    ```
