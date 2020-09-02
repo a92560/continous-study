@@ -3,6 +3,8 @@
 
 Document -> HTML -> body -> div (事件捕获) （从上往下）
 
+ https://blog.csdn.net/chenjuan1993/article/details/81347590 
+
 div 处于目标阶段
 
 div -> body -> HTML -> Document(事件冒泡) 
@@ -95,7 +97,14 @@ addEventListener('click', funciton(){}, true) // 事件捕获  默认为false �
 我是daughter
 我是baby
 我是grandma
+
 ```
+
+ w3c规定了，任何发生在w3c事件模型中的事件，首是进入捕获阶段，直到达到目标元素，再进入冒泡阶段。 
+
+ 绑定在被点击元素的事件是按照代码的顺序发生的，其他非绑定的元素则是通过冒泡或者捕获的触发。按照W3C的标准，先发生捕获事件，后发生冒泡事件。所以事件的整体顺序是：非目标元素捕获 -> 目标元素代码顺序 -> 非目标元素冒泡。 
+
+绑定在被点击元素的事件是按照代码的顺序发生的，其他非绑定的元素则是通过冒泡或者捕获的触发。按照w3c的规定，先发生捕获事件，后发生冒泡事件，所以事件的整体顺序是：非目标元素捕获->目标元素代码 顺序-> 非目标元素冒泡
 
 ## 事件代理
 
@@ -1204,6 +1213,32 @@ window.onload = fn // => 所有资源加载完
          1. 减少了冗余的数据传递，节省了宽带流量
          2. 减少了服务器的负担，大大提高了网站性能
          3. 加快了客户端加载网页的数据，这也正是HTTP缓存属于客户端缓存的原因
+         
+      8. 三级缓存原理
+      
+         1. 先查找内存，如果内存中存在，从内存中加载
+      
+         2. 如果内存中未查找到，选择硬盘获取，如果硬盘中有，从硬盘中加载
+      
+         3. 如果硬盘中未找到，那就进行网络请求
+      
+         4. 加载到的资源分别缓存到硬盘和内存
+      
+         5.  小结：一般图片会用disk cache, js文件用memory cache 
+      
+         6.  当退出进程时，内存中的数据会被清空，而磁盘的数据不会 
+      
+         7. WebKit派生资源包含的类型主要如下：
+      
+            Javascript脚本（CachedScript）；
+      
+            CSS样式文本（CachedCSSStyleSheet）；
+      
+            图片（CachedImage）；
+      
+            字体（CachedFont）；
+      
+            XSL样式表（CachedXSLStyleSheet）；
 
 ## SSL/TLS连接
 
@@ -1688,7 +1723,7 @@ function cloneDeep(obj) {
     if (obj === null) {
         return null;
     }
-    if (obj instanceOf RegExp) {
+    if (obj instanceof RegExp) {
         return new RegExp(obj);
     }
     if (obj instanceof Date) {
@@ -2648,22 +2683,20 @@ vue-router源码：
    
    var addCurry = curry(add);
    addCurry(1)(2);
-   
-   ```
-
-function curry(fn, ...args = []) {
-       const len = fn.length;
-       return function() {
+   function curry(fn, ...args = []) {
+        const len = fn.length;
+        return function() {
            let args = args.slice(0);
            args = args.concat([...arguments]);
            if (args.length < len) {
                return curry.call(this, fn, args);
            }
            return fn.apply(this, args);
-       }
+        }
    }
-   ```
    
+   ```
+
 3. curry的这种用途可以理解为：参数复用，本质上是降低通用性，提高适用性。
 
 4. ```javascript
@@ -2905,7 +2938,27 @@ function _new(func, ...args) {
         return result
     }
     return obj;
-} 
+}
+
+function deepClone(target) {
+    if (target instanceof Date) {
+        return new Date(target)
+    }
+    if (target instanceof RegExp) {
+        return new Regexp(target);
+    }
+    if (typeof target !== 'object') {
+        return target;
+    }
+    if (target == null) {
+        return target;
+    }
+    const clone = new (Object.getPrototypeOf(target).constructor);
+    Object.keys(target).forEach(it => {
+        clone[it] = deepClone(target[it])
+    })
+    return clone;
+}
 ```
 
 # 转正答辩
@@ -3233,6 +3286,106 @@ function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly
 2. clear: left/right/both  margin失效
 3. 内墙法：
    1. 浮动父元素新增同级兄弟元素 clear:both 。
+
+
+
+# 面试
+
+## TODO(自我介绍)
+
+1. 名字/专业/大三
+2. 自己做过小项目
+3. 实习
+   1. 技术提升还是有的，代码规范/开发流程/
+   2. 怎么快速熟悉项目
+      1. 断点调试
+      2. 学会找问题
+      3. 遇到不熟的知识点，模仿
+   3. 氛围，学习动力， 找到不足，遇到场景多
+   4. 项目中遇到的坑 => 源码大多数都能解决
+   5. 项目中的优化 -> 优化点
+4. 项目技术栈
+   1. 活跃在社区
+   2. 学习源码，潜移默化的影响
+
+看的书
+
+红宝书->犀牛书->你不知道的js->http->https->vue
+
+对象数组key排序
+
+ https://blog.csdn.net/weixin_34224941/article/details/91431116 
+
+```javascript
+
+const keys = ['price', 'postage', 'sales']; // 传入要排序的 key，优先级从高到低
+const orders = [1, 1, -1];
+const arr1 = multiSort(arr, keys, orders)
+// arr1:
+const arr = [
+    {"name":"商品05","price":123,"sales":143,"postage":19},
+    {"name":"商品01","price":123,"sales":123,"postage":19},
+    {"name":"商品03","price":123,"sales":133,"postage":29},
+    {"name":"商品02","price":124,"sales":123,"postage":0},
+    {"name":"商品04","price":125,"sales":123,"postage":9}
+]
+function multiSort(arr, keys, orders) {
+    if (!keys) { return arr;}
+    if (!orders) {
+        orders = Array.from( { length: key.length }, () => 1);
+    }
+    return [...arr].sort((prev, next) => {
+        for (let i = 0; i < keys.length; i ++) {
+            if (perv[keys[i]] === next[keys[i]]) continue;
+            return (prev[keys[i]] - next[keys[i]]) * (orders[i] || 1);
+        }
+        // 全部相等
+        return 0;
+    })
+}
+
+
+```
+
+
+
+lodash的get函数
+
+16匹马算法
+
+XMLHttpRequest
+
+依赖收集
+
+1. data所有key都会被observe
+
+2. 但是只有在模板上出现的key才会被依赖收集
+
+3. 执行new Vue() => 如果没有render函数 => 生成render函数 =>将render函数赋值给vm._render (renderMixin做的事情)=> mountComponent => new Watcher() => getter => vm._udpate(vm._render, hydrating) => 
+
+   targetStack: [渲染Watcher]，访问模板中data对应的key，触发Object.defineProperty，触发dep
+
+   .depend。dep下的subs存储了对应渲染watcher；
+
+   下次该key更新的话，触发dep.notify();
+
+   执行渲染watcher，对应是异步的，一般情况 lazy: true(computed watcher) sync的话，立马执行watch 对应的key的回调函数，其他的queueWatcher,
+
+   
+
+
+
+React Hooks解决了什么问题~
+
+组件复用 HOC
+
+node.repalceChild(newNode, oldNode);
+
+
+
+
+
+
 
 
 
