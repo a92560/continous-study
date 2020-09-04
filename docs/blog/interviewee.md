@@ -3382,6 +3382,113 @@ node.repalceChild(newNode, oldNode);
 
 
 
+# await async generator
+
+aysnc 是 genertor的语法糖
+
+ https://juejin.im/post/6844903902849007624 
+
+```javascript
+function* helloWorldGenerator() {
+    yield 'hello';
+    yield 'world';
+    return 'ending';
+}
+
+var hw = helloWorldGenerator();
+hw.next()
+// { value: 'hello', done: false }
+
+hw.next()
+// { value: 'world', done: false }
+
+hw.next()
+// { value: 'ending', done: true }
+
+hw.next()
+// { value: undefined, done: true }
+
+```
+
+执行generator函数helloWorldGenerator的话，并不执行，而是返回一个迭代器对象，下一步，必须调用遍历器对象的next方法，使得指针移向下一个状态。
+
+yield由于generator函数返回的遍历器对象，只有调用next方法才会遍历下一个内部状态，所以其实是提供了一种可以暂停执行的函数，yield表达式就是暂停标志。
+
+## generator 与 协程
+
+协程是一种程序运行的方式，可以用单线程实现，也可以用多线程实现
+
+* 协程概念
+  * 一个线程（或函数）执行到一半，可以暂停执行，将执行权交给另一个线程（或函数），等到稍后收回执行权的时候，在恢复执行。这种可以并行执行，交换执行权的线程（或函数）就称为协程
+* 协程和普通线程的差异
+  * 1. 普通线程是抢先式的，会争夺cpu资源，而协程是合作的，
+    2. next同一时间，可以有多个普通线程在执行，而协程只有一个在执行，其他协程则处于暂停状态
+  * Generator函数是ES6对协程的实现，但是不完全，Generator函数被称为'半协程'，意思是只有Generator函数的调用者，才能将程序的执行权还给Generator函数。如果是完全执行的过程，任何函数都可以让暂停的协程继续执行。
+
+
+
+```javascript
+function mockAsync(generatorFunc) {
+      let _iterator = generatorFunc();
+
+      function helpFunc(_iteratorRes) {
+        if (_iteratorRes.done) {
+          return;
+        }
+        let val = _iteratorRes.value;
+        if (val instanceof Promise) {
+          val.then(res => {
+            console.log(res)
+            console.log(_iterator.next(res))
+            helpFunc(_iterator.next(res))
+          }).catch(err => _iterator.throw(err))
+        }
+      }
+      try {
+        console.log(_iterator);
+        helpFunc(_iterator.next());
+      } catch (e) {
+        _iterator.throw(e)
+      }
+    }
+
+    mockAsync(function*() {
+      try {
+
+        const p1 = yield Promise.resolve(1);
+        console.log('do something');
+        const p2 = yield Promise.resolve(2);
+        console.log('do something2');
+        const p3 = yield Promise.resolve(3);
+        console.log('do something3');
+      } catch (e) {
+        console.log(e)
+      }
+    })
+```
+
+# 宏任务怎么计算执行顺序
+
+ https://juejin.im/post/6844903638238756878 
+
+```javascript
+setTimeout(() => {
+    task();
+}, 3000);
+
+sleep(100000000);
+
+
+```
+
+* task()进入任务队列并注册，计时开始
+
+
+
+
+
+
+
 
 
 
