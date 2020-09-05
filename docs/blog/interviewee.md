@@ -3485,6 +3485,52 @@ sleep(100000000);
 ```
 
 * task()进入任务队列并注册，计时开始
+* 执行sleep函数，很慢，很慢，计时仍在继续
+* 3秒到了，计时事件timeout完成，task()进入Event Queue，但是sleep也太慢了吧，还没执行完，只能等着。
+* sleep执行完了，task()终于从Event Queue进入主线程执行。
+
+上述的流程走完，我们知道setTimeout这个函数，是经过指定时间，把要执行的任务加入到任务队列中，又因为是单线程任务需要一个个执行，如果前面任务执行所需要的事件大于等待的时间，那么只能等着，导致真正的延迟时间远远大于3s。
+
+
+
+## setInterval
+
+setInterval的实现机制跟setTimeout类似，只不过setInterval是重复执行的
+
+对于setInterval容易产生一个误区：并不是上一次fn执行完成之后再过100ms才执行下一个fn。事实上，setInterval不管上一次fn的执行结果，而是每隔100ms就将fn放入主线程队列，而两次fn之间具体间隔多久就不一定了，跟setTimeout实际延迟时间类似，跟js执行情况有关。
+
+```javascript
+(function testSetInterval() {
+    let i = 0;
+    const start = Date.now();
+    const timer = setInterval(() => {
+        i += 1;
+        i === 5 && clearInterval(timer);
+        console.log(`第${i}次开始`, Date.now() - start);
+        for(let i = 0; i < 100000000; i++) {}
+        console.log(`第${i}次结束`, Date.now() - start);
+    }, 100);
+})();
+
+第1次开始 100
+第1次结束 1089
+第2次开始 1091
+第2次结束 1396
+第3次开始 1396
+第3次结束 1701
+第4次开始 1701
+第4次结束 2004
+第5次开始 2004
+第5次结束 2307
+```
+
+
+
+ 如果 setTimeout 和 setInterval 都在延迟 100ms 之后执行，那么谁先注册谁就先执行回调函数。 
+
+如果fn执行时间很长，但下一次并不是等待上一次执行完了再过100ms才执行的。实际上早已经在任务队列里等待执行了。
+
+
 
 
 
