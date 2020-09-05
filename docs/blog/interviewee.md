@@ -3530,9 +3530,49 @@ setInterval的实现机制跟setTimeout类似，只不过setInterval是重复执
 
 如果fn执行时间很长，但下一次并不是等待上一次执行完了再过100ms才执行的。实际上早已经在任务队列里等待执行了。
 
+## 异步任务执行的时间
 
+执行到异步任务的时候，会直接放到异步队列中吗？答案是不一定的
 
+因为浏览器有个定时器模块，定时器到了执行时间才会把异步任务放到任务队列。
 
+## requestAnimationFrame
+
+定义：下次页面重绘前所执行的操作，而重绘也是作为宏任务的一个步骤来存在的，且该步骤晚于微任务的执行。
+
+```html
+<div class='box'>
+    
+</div>
+<script>
+	function animationWidth() {
+      var div = document.getElementById('box');
+      div.style.width = parseInt(div.style.width) + 1 + 'px';
+    }
+
+    if(parseInt(div.style.width) < 200) {
+        requestAnimationFrame(animationWidth)
+    }
+</script>
+```
+
+1. requestAnimationFrame会把每一帧中的所有DOM操作集中起来，在一次重绘/回流中完成，并且重绘或回流的时间紧紧跟着浏览器的刷新频率，每秒60帧
+2. 隐藏或不可见的元素，requestAnimationFrame将不会进行重绘或回流，减少cpu使用量
+3. requestAnimationFrame方法返回一个id用于取消该方法。cancelAnimationFrame
+
+## HTTP 请求特征
+
+ https://blog.csdn.net/qq_31332467/article/details/79217262 
+
+从上面整个过程中我们可以总结出 HTTP 进行分组传输是具有以下特征
+
+- 支持客户-服务器模式
+- 简单快速：客户向服务器请求服务时，只需传送请求方法和路径。请求方法常用的有 GET、HEAD、POST。每种方法规定了客户与服务器联系的类型不同。由于 HTTP 协议简单，使得 HTTP 服务器的程序规模小，因而通信速度很快。
+- 灵活：HTTP 允许传输任意类型的数据对象。正在传输的类型由 Content-Type 加以标记。
+- 无连接：无连接的含义是限制每次连接只处理一个请求。服务器处理完客户的请求，并收到客户的应答后，即断开连接。采用这种方式可以节省传输时间。
+- 无状态：HTTP 协议是无状态协议。无状态是指协议对于事务处理没有记忆能力。缺少状态意味着如果后续处理需要前面的信息，则它必须重传，这样可能导致每次连接传送的数据量增大。另一方面，在服务器不需要先前信息时它的应答就较快。
+
+#  行内元素和块元素有什么区别？ 
 
 
 
