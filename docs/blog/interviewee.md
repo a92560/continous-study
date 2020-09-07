@@ -3688,7 +3688,11 @@ setInterval的实现机制跟setTimeout类似，只不过setInterval是重复执
 1. 给行内元素设置宽高无效
 2. 设置左右方向的margin和padding有效，上下padding在视觉上是有效的，但是padding部分是不占据空间的。
 
-# 
+# Regexp
+
+https://regexper.com/
+
+1. 去除左右两边的空格 
 
 
 
