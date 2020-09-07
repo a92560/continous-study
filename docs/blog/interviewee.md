@@ -3464,7 +3464,12 @@ React Hooks解决了什么问题~
 
 node.repalceChild(newNode, oldNode);
 
+## DOM
 
+```javascript
+// 给一个元素Element,找出这个元素的全部Input子元素。
+function findAllInputElement (element) {}
+```
 
 
 
@@ -3656,6 +3661,34 @@ setInterval的实现机制跟setTimeout类似，只不过setInterval是重复执
 - 无状态：HTTP 协议是无状态协议。无状态是指协议对于事务处理没有记忆能力。缺少状态意味着如果后续处理需要前面的信息，则它必须重传，这样可能导致每次连接传送的数据量增大。另一方面，在服务器不需要先前信息时它的应答就较快。
 
 #  行内元素和块元素有什么区别？ 
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+      .span {
+        margin: 20px;
+        padding: 20px 50px;
+        background: red;
+      }
+    </style>
+</head>
+<body>
+  <span class="span">span</span>
+  <span class="span">span</span>
+  <div class="block">block</div>
+</body>
+</html>
+
+```
+
+1. 给行内元素设置宽高无效
+2. 设置左右方向的margin和padding有效，上下padding在视觉上是有效的，但是padding部分是不占据空间的。
+
+# 
 
 
 
