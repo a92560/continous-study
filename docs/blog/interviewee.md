@@ -3692,7 +3692,80 @@ setInterval的实现机制跟setTimeout类似，只不过setInterval是重复执
 
 https://regexper.com/
 
-1. 去除左右两边的空格 
+1. 去除左右两边的空格
+
+   str.replace(/^(\s)+|(\s)+$/, '');
+
+2. 去除除左右两边空格之外的空格
+
+   str.replace(/(\S)\s+(\b)/, '$1$2');
+
+
+
+
+
+# 三列布局，左右两边固定宽高
+
+## 浮动
+
+```html
+<style>
+    .wrapper + div {
+        
+    }
+</style>
+
+<div class="wrapper">
+    <div class="left">
+        
+    </div>
+    <div class="right">
+        
+    </div>
+    <div class="center">
+        
+    </div>
+</div>	
+```
+
+## p ~ ul p之后出现的所有ul
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+      p ~ ul {
+        background: red;
+      }
+    </style>
+</head>
+<body>
+  <p>快乐生活</p>
+  <ul>
+      <li>生活</li>
+      <li>生活</li>
+      <li>生活</li>
+      <ul>
+          <li>1</li>
+          <li>2</li>
+          <li>3</li>
+      </ul>
+  </ul>
+</body>
+</html>
+
+```
+
+
+
+## div > span
+
+## div span
+
+## .a + .b
 
 
 
