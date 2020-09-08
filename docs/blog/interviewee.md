@@ -3730,6 +3730,9 @@ https://regexper.com/
 
 ## p ~ ul p之后出现的所有ul
 
+ 通用选择器
+选择匹配的F元素，且位于匹配的E元素后的所有匹配的F元素 
+
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -3754,6 +3757,11 @@ https://regexper.com/
           <li>3</li>
       </ul>
   </ul>
+    <ul>
+        <li>2</li>
+        <li>3</li>
+        <li>4</li>
+    </ul>
 </body>
 </html>
 
@@ -3763,9 +3771,23 @@ https://regexper.com/
 
 ## div > span
 
+ 子选择器
+选择匹配的F元素，且匹配的F元素所匹配的E元素的子元素 
+
 ## div span
 
 ## .a + .b
+
+  相邻兄弟选择器
+选择匹配的F元素，且匹配的F元素紧位于匹配的E元素的后面 
+
+# ES6
+
+## class 和 es5 的prototype区别
+
+## 箭头函数为啥不能被new
+
+
 
 
 
