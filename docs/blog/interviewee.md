@@ -2372,7 +2372,35 @@ vue-router源码：
 
 # React 和 Vue 的区别
 
+1. 写法
 
+   1. vue
+
+      template -> vue-loader 转换成render函数
+
+   2. react
+
+      JSX -> createElement(JSX)
+
+2. 数据流
+
+   1. vue双向数据流
+
+      ```javascript
+      updateComponent = () => {
+          vm._update(vm._render())
+      }
+      mountComponent -> new Watcher(vm, updateComponent)
+      watcher.get() 
+      pushTarget(this) => 将全局的渲染watcher放到targetStack里面 此时Dep.target = new Watcher
+      updateComponent() => ininState() => 每个data下对应的key => 如果在模板中出现 => 每个key对应一个dep 且 dep下有一个subs属性，这里面存储订阅者，即一个个watcher。
+      更新的过程
+      对应的key变化 => 触发dep.notify() => 遍历subs执行每一个 watcher.update() 方法 => 
+      schedule.js => 全局存储queue对象
+      queueWatcher() 去重操作 => nextTick(flushSchedulerQueue) => 执行
+      ```
+
+   2. 单向数据流
 
 # 函数的四种调用模式及this指向
 
