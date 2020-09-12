@@ -3815,9 +3815,41 @@ https://regexper.com/
 
 ## 箭头函数为啥不能被new
 
+# Error
+
+window.addEventListener('error', function(e) {})
+
+window.addEventListener('unhandledrejection', function(e) {})
+
+XMLHttpRequest fetch 先执行unhandledrejection
+
+async/await错误只执行 unhandledrejection
+
+```javascript
+generator错误
+window.addEventListener('error', (e)=>{
+  console.log('addEventListener')
+}, true);
+
+window.addEventListener("unhandledrejection", function(e) {
+    console.log('unhandledrejection')
+}, true);
+
+// gennerator
+function* F() {
+  throw new Error("gennerator-throw在函数体外抛出的错误")
+  yield 1;
+  return "gennerator-value";
+}
+
+var f = F();
+
+f.next();
+```
 
 
 
+# 排序算法
 
 
 
