@@ -2638,6 +2638,13 @@ vue-router源码：
    1. 请求方法为get/head/post
    2. post请求的Content-Type并非application/x-www-urlencoded，multipart/form-data，或text/plain;
    3. 请求设置了自定义的header字段（可允许：Accept, Accept-Language，Content-Language, Content-Type）;
+3. 解决办法
+   1. 代理转发 proxy
+   2. websocket
+   3. jsonp
+   4. iframe + contentWindow
+   5. iframe + window.name  要求同域名
+   6. 
 
 
 
@@ -3850,6 +3857,58 @@ f.next();
 
 
 # 排序算法
+
+
+
+# cors原理
+
+
+
+# css动画卡/JS动画卡
+
+http://sy-tang.github.io/2014/05/14/CSS%20animations%20and%20transitions%20performance-%20looking%20inside%20the%20browser/
+
+https://segmentfault.com/a/1190000013045035
+
+## 主线程
+
+1. 运行javascript
+2. 计算HTML元素的CSS样式
+3. 页面的布局
+4. 将元素绘制到一个或多个位图中
+5. 将这些位图交给合成线程
+
+## 合成线程
+
+1. 通过GPU将位图绘制到屏幕上
+2. 通知主线程更新页面中可见或即将变成可见的部分的位图
+3. 计算出页面哪部分是可见的
+4. 计算出当你在滚动页面时哪部分是即将成为可见的
+5. 当你在滚动页面时将相应位置的元素移动到可视区域
+
+长时间执行JavaScript或渲染一个很大的元素会阻塞主线程，在这期间，它将无法响应用户的交互。
+
+相反，合成线程则会尽量去响应用户的交互。当一个页面发生变化时，合成线程会以每秒60帧的间隔不断去重绘这个页面，即使这个页面不完整。
+
+## GPU
+
+合成线程会使用GPU将位图绘制到屏幕上
+
+GPU的快在于：
+
+1. 绘制位图到屏幕上
+2. 一遍又一遍地绘制相同的位图
+3. 将同一位图绘制到不同位置，执行旋转及缩放处理
+
+
+
+GPU的慢在于
+
+1. 将位图加载到内存中
+
+
+
+# transform和transition的区别
 
 
 
