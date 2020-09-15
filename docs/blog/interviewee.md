@@ -2497,6 +2497,10 @@ vue-router源码：
 
    TCP是面向字节流，虽然应用程序和TCP的交互是一次一个数据块（大小不等），但TCP把应用程序看成
 
+
+
+## TCP和UDP的区别，字节流和字符流的区别
+
 # AMD/CMD/CommonJs/ES6 module
 
 1. AMD
@@ -3906,13 +3910,104 @@ GPU的慢在于
 
 1. 将位图加载到内存中
 
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Page Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    .margin-transition{
+      /* margin-left: 0; */
+      background: rgba(0,0,255,0.3);
+      transition: margin-left 1s;
+    }
+    .transform-transition{
+      /* transform: translate(0,0); */
+      background: rgba(0,255,0,0.3);
+      transition: transform 1s;
+    }
+    .common{
+      height: 300px;
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+<div class="margin-transition common" id="marginTransition">
+  <p>transition:margin-left 1s</p>
+</div>
+<div class="transform-transition common" id="transformTransition">
+  <p>transition:transform 1s</p>
+</div>
+<button id="control">见证奇迹</button>
+<script>
+  var btn = document.getElementById('control');
+  var marginTransition = document.getElementById('marginTransition');
+  var transformTransition = document.getElementById('transformTransition');
+  btn.addEventListener("click",function(){
+    console.log(marginTransition.style,transformTransition.style)
+    marginTransition.style.marginLeft = "500px";
+    // transformTransition.style.transform = "translate(500px,0)"
+  })
+</script>
+</body>
+</html>
 
+
+
+
+
+
+```
+
+## margin-left
+
+![img](C:\Users\V_DARL~1\AppData\Local\Temp\企业微信截图_16001569656225.png)
+
+## transform
+
+![image-20200915160545532](C:\Users\v_darliang\AppData\Roaming\Typora\typora-user-images\image-20200915160545532.png)
 
 # transform和transition的区别
 
+## transition: height
 
+现在，我们对渲染页面的软硬件都有了一些初步的了解，接下来让我们看看浏览器的主线程和合成线程是如何协同工作来执行一个css transition的
+
+
+
+假设我们要一个元素的height 从 100px 变成 200px，就像这样
+
+```html
+div {
+	height: 100px;
+	transition: height 1s linear;
+}
+div:hover {
+	height: 200px;
+}
+```
+
+主线程和合成线程将按照下面的流程图来执行相应的操作。注意在橘黄色的方框的操作可能会比较耗时，在蓝色框中的操作是比较快速的
+
+正如你所看到，在上图中有很多橘黄色方框，意味着，浏览器需要做大量的工作，也就是说这个动画可能会变得卡顿
+
+在动画的每一帧中，浏览器需要执行布局、重绘、回流、绘制、以及将新的位图提交给GPU。我们知道，将位图加载到GPU的内存中是一个相对较慢的操作。
+
+浏览器需要做大量的工作的原因在于每一帧中元素的内容都在不断改变。改变一个元素的高度可能导致需要同步改变它的子元素的大小，所以浏览器必须重新计算布局。布局完成后，主线程又必须重新生成该元素的位图。
+
+
+
+## transition: transform
+
+这对浏览器来说是个好消息 ！浏览器只需要一次生成这个元素的位图，并在动画开始的时候将它提交给GPU去处理 。之后，浏览器不需要再做任何布局、 绘制以及提交位图的操作。从而，浏览器可以充分利用 GPU 的特长去快速地将位图绘制在不同的位置、执行旋转或缩放处理。
 
 # ES6默认参数
+
+https://juejin.im/post/6844903839280136205
 
 ## 特定的参数中间作用域
 
@@ -3934,6 +4029,150 @@ function foo(x, y = function() { x = 2 }) {
 -> { x: undefined, y: function(){ x = 2 }} // 参数
 
 -> { x: 1 } 全局
+
+## undefined 检查
+
+还要注意另外一个有趣的事实，是否应用默认值，取决于对参数初始值（其赋值发生在一进入上下文时）的检查结果是否为值undefined。我们来证明一下
+
+```javascript
+function foo(x, y = 2) {
+    console.log(x, y);
+}
+foo(); // undefined, 2
+foo(1); // 1, 2
+
+foo(undefined, undefined) // undefined, 2
+foo(1, undefined); // 1, 2
+foo('')
+```
+
+## 解构组件的默认赋值
+
+涉及默认值的另一个地方是解构组件的默认值，本文不会涉及解构赋值的主题，不过我们会展示一些小例子。不管是在函数参数中使用解构，还是上述的使用简单默认值，处理默认值的方式都是一样的：即在需要的时候创建两个作用域
+
+```javascript
+function foo({ x, y = 5 } = {}) {
+    console.log(x, y);
+}
+foo(); // undefined 5
+foo(''); // undefined 5
+foo(null);
+```
+
+
+
+# 链表和数组的区别
+
+
+
+# 骨架屏原理
+
+
+
+# 下拉框DOM节点过多
+
+1. 滚动加载，出现无限滚动时，可能给dom过多页面卡死
+2. 滚动加载的组件，dom过多，销毁组件的时候也会出现卡死
+3. 任何滚动的元素，内部元素过多，都会出现卡顿现象
+
+在非可视区域的dom，都暂时转存到内存中，为了防止抖动，也要实现占位功能
+
+# 性能监控
+
+
+
+lighthouse
+
+
+
+
+
+# 部署经验
+
+1. 后端node项目，git clone项目之后，egg-dev模式下，除非出错或者主动停止，否则断开服务器连接，node项目也是处于运行中。
+2. 前端vue项目，git clone 打包好的vue项目之后，部署到nginx，然后因为请求也是从80端口发出，可以通过反向代理，代理从以api开头的请求，代理到nodejs项目的运行地址。
+3. 数据库，直接免费云数据库。
+
+
+
+
+
+# 错误上报
+
+https://zhuanlan.zhihu.com/p/75577689
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+<script>
+  // window.onerror = function(message, source, lineno, colno, error) {
+  //   // 错误信息，源文件，行号
+  //   console.log(message + '\n' + source + '\n' + lineno);
+  //   // 禁止浏览器打印标准的错误信息
+  //   return true;
+  // }
+  // console.log(a);
+
+  // const p1 = new Promise((resolve, reject) => {
+  //   resolve(1)
+  // })
+  // p1.then(res => {
+  //   console.log(res);
+  //   throw 1;
+  // }).then(res => {
+  //   console.log(res);
+  // })
+  //
+  // window.addEventListener('unhandledrejection', (e) => {
+  //   console.log(e);
+  // })
+  window.addEventListener('error', (e) => {
+    console.log(e);
+  })
+
+  function* F() {
+    throw new Error("gennerator-throw在函数体外抛出的错误")
+    yield 1;
+    return "gennerator-value";
+  }
+
+  const f = F();
+
+  f.next();
+
+
+
+</script>
+</html>
+
+```
+
+## window.onerror / window.addEventListener捕获js运行时错误
+
+## 资源加载错误时使用addEventListener去监听error事件
+
+## 未处理的promise错误处理方式
+
+## fetch与xhr错误的捕获
+
+
+
+# Promise
+
+如果是通过new Promise的话，我们会传入一个构造函数，然后给这个函数传入两个参数，一个是resolve，一个是reject。然后我们构造器函数的代码是同步执行的，如果调用resolve函数，将resolve函数的参数存储起来。用作下一次then结果函数的参数。执行完构造函数的代码之后。如果调用.then。将.then的函数参数存储起来。setTimeout之后调用。模拟一个异步的效果。
+
+
+
+
+
+
 
 
 
