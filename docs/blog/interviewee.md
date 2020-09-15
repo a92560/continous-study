@@ -4162,6 +4162,10 @@ https://zhuanlan.zhihu.com/p/75577689
 
 ## fetch与xhr错误的捕获
 
+https://www.jianshu.com/p/b61caea752dd
+
+https://juejin.im/post/6844904113134632973
+
 
 
 # Promise
