@@ -1056,6 +1056,8 @@ window.onload = fn // => 所有资源加载完
 
 # URL的输入到浏览器解析的一系列事件
 
+https://www.xuanbiyijue.com/2020/07/25/%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86%E3%80%81%E6%B8%B2%E6%9F%93%E9%98%BB%E5%A1%9E%E3%80%81%E5%B8%A7%E5%8E%9F%E7%90%86%E4%B8%80%E6%AC%A1%E6%80%A7%E8%AF%B4%E5%AE%8C/
+
 ## 用户输入
 
 1. 地址栏判断输入的是关键字还是请求的URL
@@ -2646,9 +2648,10 @@ vue-router源码：
    1. 代理转发 proxy
    2. websocket
    3. jsonp
-   4. iframe + contentWindow
-   5. iframe + window.name  要求同域名
-   6. 
+   4. iframe + contentWindow + postMessage
+   5. iframe + window.name  要求同域名 (name1.html，name2.html，proxy.html)
+   6. iframe + location.hash
+   7. iframe + window.domain  同一个主域，不同子域之间。
 
 
 
@@ -4171,6 +4174,157 @@ https://juejin.im/post/6844904113134632973
 # Promise
 
 如果是通过new Promise的话，我们会传入一个构造函数，然后给这个函数传入两个参数，一个是resolve，一个是reject。然后我们构造器函数的代码是同步执行的，如果调用resolve函数，将resolve函数的参数存储起来。用作下一次then结果函数的参数。执行完构造函数的代码之后。如果调用.then。将.then的函数参数存储起来。setTimeout之后调用。模拟一个异步的效果。
+
+
+
+# CSS/JS 阻塞渲染
+
+https://juejin.im/post/6844903667733118983
+
+## CSS加载完成之前，h1DOM节点已经渲染完成，但是处于白屏状态
+
+### 结论：CSS会阻塞DOM渲染，但不会阻塞DOM解析
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>css阻塞</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    h1 {
+      color: red !important
+    }
+  </style>
+  <script>
+    function h () {
+      console.log(document.querySelectorAll('h1'))
+    }
+    // h();
+    setTimeout(h, 0)
+  </script>
+  <link href="https://cdn.bootcss.com/bootstrap/4.0.0-alpha.6/css/bootstrap.css" rel="stylesheet">
+</head>
+<body>
+<h1>这是红色的</h1>
+</body>
+</html>
+```
+
+## CSS加载会阻塞JS执行吗
+
+### 结论：CSS加载会阻塞后面的js运行，位于CSS加载语句前的js代码先执行了，但是位于CSS加载语句后的代码却迟迟没有执行
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>css阻塞</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      console.log('before css')
+      var startDate = new Date()
+    </script>
+    <link href="https://cdn.bootcss.com/bootstrap/4.0.0-alpha.6/css/bootstrap.css" rel="stylesheet">
+  </head>
+  <body>
+    <h1>这是红色的</h1>
+    <script>
+      var endDate = new Date()
+      console.log('after css')
+      console.log('经过了' + (endDate -startDate) + 'ms')
+    </script>
+  </body>
+</html>
+
+```
+
+## DOMContentLoaded
+
+### 假设：当页面只存在css，或者js都在css前面，那么DOMContentLoaed不需要等到css加载完毕
+
+### 结论：在CSS加载完成之前，输出DOMContentLoaded。成立
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>css阻塞</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOMContentLoaded');
+      })
+    </script>
+    <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <link href="https://cdn.bootcss.com/bootstrap/4.0.0-alpha.6/css/bootstrap.css" rel="stylesheet">
+  </head>
+  <body>
+  </body>
+</html>
+试试外链脚本
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+```
+
+
+
+### 假设：当页面同时存在css和js，js属于外链，需要等到两个文件加载完成
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>css阻塞</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOMContentLoaded');
+    })
+  </script>
+  <link href="https://cdn.bootcss.com/bootstrap/4.0.0-alpha.6/css/bootstrap.css" rel="stylesheet">
+</head>
+<body>
+</body>
+</html>
+
+```
+
+
+
+
+
+### 假设：当页面同时存在css和js，且js在css后面的时候，DOMContentLoaded必须等到CSS和JS执行完毕才触发
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>css阻塞</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOMContentLoaded');
+      })
+    </script>
+    <link href="https://cdn.bootcss.com/bootstrap/4.0.0-alpha.6/css/bootstrap.css" rel="stylesheet">
+
+    <script>
+      console.log('到我了没');
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
+
+```
+
+
 
 
 
