@@ -773,6 +773,8 @@ console.log(clone(person))
 
 # 存储
 
+https://www.jianshu.com/p/2f7031a69f43
+
 ## cookie
 
 1. 大小限制为4kb，可以主动设置过期时间
@@ -2497,7 +2499,15 @@ vue-router源码：
 
 1. TCP是面向连接的、可靠的流协议。流就是指不间断的数据结构，当应用程序采用TCP发送消息时，虽然可以保证发送的顺序，但还是犹如没有任何间隔的数据流发送给接收端。
 
-   TCP是面向字节流，虽然应用程序和TCP的交互是一次一个数据块（大小不等），但TCP把应用程序看成
+   TCP是面向字节流，虽然应用程序和TCP的交互是一次一个数据块（大小不等），但TCP把应用程序看成是一连串的无结构的字节流，TCP有一个缓冲区，当应用程序传送的数据块太长，TCP就可以把它划分短一些再传送。
+   
+2. TCP为提供可靠性传输，实行'顺序控制'和'重发控制'机制，此外还具备'流量控制'、'拥塞控制'、提高网络利用率等众多功能
+
+### 特点
+
+1. TCP充分实现了数据传输时各种控制功能，可以进行丢包时的重发机制，还可以对次序乱掉的分包进行顺序控制。
+2. TCP是面向有连接的协议，只有在确认通信对端存在时才会发送数据，从而可以控制通信流量的浪费
+3. 
 
 
 
@@ -4326,17 +4336,109 @@ https://juejin.im/post/6844903667733118983
 
 
 
+# SEO
+
+https://blog.csdn.net/xiaoxueqiu1987/article/details/77196543
+
+## 权重：title > keywords > description
+
+## title（网站标题）
+
+### '<title>测试</title>'
+
+## keywords（关键词）本页内容围绕哪些词展开的（词语组成）
+
+### <meta name="keywords" Content="keyword1,keyword2"/>
+
+## description（内容摘要）描述内容（一段话）
+
+### <meta name="description" Content=""/>
+
+## 提高页面加载速度
+
+## HTML语义化 -> 导航栏 nav  片段用section  header footer main aside main -> 语义化代码有利于搜索引擎理解网页。
+
+### section，顾名思义就是一个章节，比如：
+
+### <section> <h1>WWF</h1> <p>The World Wide Fund for Nature (WWF) is....</p> </section>
+
+## 部署到https
 
 
 
 
 
+# 大数相加
+
+```javascript
+const addStrings = function(num1, num2) {
+    let str = '';
+    const len = Math.max(num1.length, num2.length);
+    // 进位
+    let step = 0;
+   	for (let i = -1; i >= -len; i --) {
+        const n1 = num1.slice(i, (i + 1) || undefined) - 0;
+        const n2 = num2.slice(i, (i + 1) || undefined) - 0;
+        const res = n1 + n2 + step;
+        if (res = 9) {
+            step = 1;
+            str += res - 10;
+        } else {
+            step = 0;
+            str += res;
+        }
+    }
+    return step === 0 ? str : step + str;
+}
+```
+
+# 最快的马
+
+## 第一步：把64匹马分8组，各跑一次，然后淘汰掉每组的后四名，这里淘汰后四名是因为只需要跑得最快的四匹马。8轮
+
+![img](https://img-blog.csdnimg.cn/20200106102717717.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQ0NzU2Nzky,size_16,color_FFFFFF,t_70)
+
+
+
+## 第二步：取每组第一名进行一次比赛，所以淘汰最后四名所在组的所有马，因为后四名所在的组的第一名都没有跑过前四名的马，所以可以直接淘汰。
+
+![img](https://img-blog.csdnimg.cn/20200106103051886.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQ0NzU2Nzky,size_16,color_FFFFFF,t_70)
+
+### 这时候还剩下16匹马，在这里其实可以继续淘汰，因为D1是第九轮的第四名，但D1又是它所在的组的第一名，那么对应的D2，D3，D4都可以继续淘汰掉，但是第四名也可能出现在C2中，C2是它所在组的第二名，所以C3，C4也可以淘汰掉了，同理B4也可以淘汰掉了。
+
+![img](https://img-blog.csdnimg.cn/20200106104423184.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQ0NzU2Nzky,size_16,color_FFFFFF,t_70)
+
+
+
+## 第三步：A2，A3，A4，B2，B3，C1，C2，D1八匹马跑一次。
+
+1. 如果这次排名，B2或C1能进前三名，则加上B1后，B1一定能进前三名，因为B1 排名比B2和C1都要靠前；
+
+      到此比赛可以结束了；**这种情况8+1+1＝10次出结果；**
+
+2. 如果这次排名，B2或C1不能进入前三名，则需要**再进行一次**比赛，B1、A2、A3、A4进行，取前三名：**这种情况8+1+1+1=11次出结果。**
 
 
 
  
 
+# CDN
 
+
+
+# HTTP3.0
+
+### 1.http3基于QUIC协议，完全解决了'队头阻塞'的问题，弱网环境下的表现会优于http2
+
+### 2.QUIC是一个新的传输协议，建立在UDP之上，实现了可靠传输
+
+### 3. QUIC内含了TLS1.3，只能加密通信，支持0-rtt快速建连
+
+### 4. QUIC的连接使用'不透明'的连接ID，不绑定在'IP地址 + 端口'上，支持'连接迁移'
+
+### 5. http/3没有指定默认端口号，需要使用http/2的扩展帧'alt-svc'来发现。
+
+## 
 
 
 
