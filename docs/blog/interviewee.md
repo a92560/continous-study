@@ -1,5 +1,5 @@
 
-## DOM事件流
+# DOM事件流
 
 Document -> HTML -> body -> div (事件捕获) （从上往下）
 
@@ -1480,7 +1480,7 @@ JavaScript文件的下载过程会阻塞DOM解析吗？
 
    1. http特点
 
-   2. 不安全
+   5. 不安全
 
          1. 机密性
 
@@ -1498,7 +1498,7 @@ JavaScript文件的下载过程会阻塞DOM解析吗？
 
              不能否认过已发生的行为，不能说话不算数。
 
-   	3. https解决方法
+         3. https解决方法
 
           	1. 机密性由对称加密AES保证，完整性由SHA384摘要算法保证，身份认证和不可否认由RSA非对称加密保证。
 
@@ -2507,9 +2507,23 @@ vue-router源码：
 
 1. TCP充分实现了数据传输时各种控制功能，可以进行丢包时的重发机制，还可以对次序乱掉的分包进行顺序控制。
 2. TCP是面向有连接的协议，只有在确认通信对端存在时才会发送数据，从而可以控制通信流量的浪费
-3. 
+3. 根据TCP的这些机制，在IP这种无连接的网络上也能够实现高可靠性的通信（主要通过校验、序列号、确认应答、重发控制、连接管理以及窗口控制等机制实现）
 
 
+
+## UDP
+
+UDP是面向报文的，所谓面向报文，是指面向报文的传输方式是应用层交给UDP多长的报文，UDP就照样发送，即一次发送一个报文。因此，应用程序必须选择合适大小的报文，若报文太长，则IP层需要分片，降低效率。
+
+UDP具有不可靠的数据报协议，细微的处理它会交给上层的应用处理去完成。在UDP的情况下，虽然可以确保发送消息的大小，却不能保证消息一定会到达。因此，应用有时候会根据自己的需要进行重发处理。
+
+### 特点
+
+1. UDP不提供复杂的控制机制，利用IP提供面向无连接的通信服务
+2. 传输途中出现丢包，UDP也不负责重发。
+3. 当包的到达顺序出现乱序时，UDP没有纠正的功能。
+4. 并且它是将应用程序发来的数据在收到的那一刻，立刻按照原样发送到网络上的一种机制。即使是出现网络拥堵的情况，UDP也无法进行流量控制来避免网络拥塞行为。
+5. 即时通信和广播通信
 
 ## TCP和UDP的区别，字节流和字符流的区别
 
@@ -4438,9 +4452,67 @@ const addStrings = function(num1, num2) {
 
 ### 5. http/3没有指定默认端口号，需要使用http/2的扩展帧'alt-svc'来发现。
 
-## 
 
 
+
+
+# Symbol有什么使用场景？
+
+## 这里的'foo'是该Symbol的一个描述，但是并非两个参数都为'foo' ，就能够使得这两个Symbol相同。
+
+```javascript
+const s1 = Symbol();
+const s2 = Symbol();
+
+s1 === s2; // false
+
+const s3 = Symbol('foo');
+const s4 = Symbol('foo');
+s1 === s2; // false
+```
+
+
+
+## 作为属性名的使用
+
+```javascript
+const mySymbol = Symbol();
+const obj = {};
+
+obj[mySymbol] = 'Hello';
+
+
+// 第二种写法
+const obj1 = { [mySymbol]: 'hello' };
+
+// 第三种写法
+const obj2 = {};
+Object.defineProperty(obj, mySymbol, { value: 'hello' });
+```
+
+
+
+## 将两个属性绝对区分开来。
+
+
+
+# PLUGIN 和 LOADER的区别
+
+https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/308
+
+## loader
+
+1. 它是一个转换器，将A文件进行编译成B文件，比如：将A.less转换成A.css，单纯的文件转换过程（转换）
+
+## plugin
+
+1. plugin是一个扩展器，它丰富了webpack本身，针对的是loader结束后，webpack打包的整个过程，它并不直接操作文件，而是基于事件机制工作，会监听webpack打包过程中的某些节点。（合并压缩）
+
+
+
+# 原生操作DOM API
+
+https://www.cnblogs.com/liuxianan/p/javascript-dom-api.html
 
 
 
