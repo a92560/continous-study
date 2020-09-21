@@ -2611,8 +2611,24 @@ UDP具有不可靠的数据报协议，细微的处理它会交给上层的应�
       var a2 = require("a2.js")
       console.log(a2) {num:1， obj: { name: "DARREN"}}
       ```
+      
+   3. exports是module.exports的一个引用。所以不能对exports = {} 重新赋值
+   
+   4. 在导入模块处修改导出的值时，如果导出值为基本类型，修改则不影响导出模块，如果导出值为引用类型，如果对引用类型重新赋值，也不影响导出模块，如果修改引用类型的key值，则会影响导出模块。
 
+1. es6 module
 
+   https://juejin.im/post/6844903585805762573
+
+   - ## `import`来的变量，因为是别人家的变量，所以只能读，不能写
+
+   1. export default 
+
+      一个文件中的只能有一个，导出的是值的引用，类似指针的东西，如果尝试在引用模块内对export default导出值进行重新赋值，会提示导出值undefined。如果是引用值，则可以修改其key属性。修改的key属性会影响导出模块
+
+   2. export
+
+      一个文件中可以有多个，如果尝试在引用模块内对export default导出值进行重新赋值，会提示导出值undefined。如果是引用值，则可以修改其key属性。修改的key属性会影响导出模块
 
 
 # Event Loop
@@ -3851,6 +3867,59 @@ https://regexper.com/
 
 ## class 和 es5 的prototype区别
 
+https://juejin.im/post/6844903924015120397
+
+1. es6转换成es5，实质上还是原型链继承
+
+2. 区别
+
+   ```javascript
+   class A {
+   
+   }
+   
+   const a = new A();
+   // console.dir(a)
+   
+   class B extends A {
+     constructor() {
+       super();
+       // console.log(this);
+     }
+   }
+   
+   
+   
+   const b = new B();
+   // console.dir(b)
+   
+   debugger;
+   
+   function Child(name, age) {
+     Parent.call(this, name);
+     this.age = age;
+   }
+   
+   function Parent(name) {
+     this.name = name;
+   }
+   
+   Parent.prototype = Object.create(Parent.prototype);
+   Parent.prototype.constructor = Parent;
+   
+   const child = new Child('Darren2', 18);
+   const parent = new Parent('Darren1');
+   
+   console.dir(child);
+   console.dir(parent);
+   
+   ```
+
+   ### ES6
+
+   1. B.__ proto __ === A;
+   2. 子类的constructor里必须执行super
+
 ## 箭头函数为啥不能被new
 
 # Error
@@ -4094,7 +4163,15 @@ foo(null);
 
 # 骨架屏原理
 
+https://segmentfault.com/a/1190000014832185#comment-area
 
+简单来说，骨架屏就是在页面内容未加载完成之前，先使用一些图形进行占位，待内容加载完成之后再把它替换掉。
+
+1. 新建Skeleton.vue文件
+2. 新建一个skeleton.entry.js入口文件
+3. 轮到关键插件vue-server-renderer登场，利用.vue文件处理成html和css字符串的功能，来完成骨架屏的注入。
+4. 新建webpack.skeleton.conf.js文件，以专门来进行骨架屏的构建，生成skeleton.json文件
+5. 新建skeleton.js，用于将json文件往index.html内插入骨架屏。
 
 # 下拉框DOM节点过多
 
@@ -4513,6 +4590,28 @@ https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/308
 # 原生操作DOM API
 
 https://www.cnblogs.com/liuxianan/p/javascript-dom-api.html
+
+
+
+
+
+# es6继承和es5继承的本质区别
+
+
+
+# vue的项目有哪些可以优化
+
+路由懒加载
+
+第三方插件的按需引入
+
+长列表Object.freeze
+
+keep-alive
+
+关闭source-map
+
+webpack 的 DLL 插件全部打成一个 js 然后发布到自己的 CDN 上。
 
 
 
