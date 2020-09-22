@@ -1326,7 +1326,10 @@ JavaScript文件的下载过程会阻塞DOM解析吗？
       
       ```
 
-      
+      1. head部分有script标签，且是外部链接，且不存在defer/async属性。暂停DOM解析
+         1. 如果script标签之前存在css链接，需要等待css加载并执行完，再去加载js文件并执行
+         2. 如果script标签之前不存在，再去加载文件并执行
+      2. body下面存在script标签，DOM解析完成。
 
    4. 浏览器不能直接理解HTML数据，所以第一步需要将其转换为浏览器能够理解的DOM树结构（渲染进程将HTML内容转换为能够读懂的DOM结构）
 
@@ -3957,6 +3960,39 @@ f.next();
 
 
 # 排序算法
+
+## 稳定：如果相等的2个元素，在排序前后的相对位置保持不变，那么这是稳定的排序算法
+
+## 冒泡
+
+#### 最坏时间复杂度O(n^2)
+
+#### 最好时间负责度O(n)
+
+```javascript
+function bubbleSort(arr) {
+  const len = arr.length;
+  let sorted = true;
+  for (let end = len - 1; end > 0; end --) {
+    for (let start = 0; start < end; start ++) {
+      if (arr[start] > arr[start + 1]) {
+        let temp = arr[start];
+        arr[start] = arr[start + 1];
+        arr[start + 1] = temp;
+        sorted = false;
+      }
+    }
+    // 优化
+    if (sorted) {
+      break;
+    }
+  }
+  return arr;
+}
+
+console.log(bubbleSort([1, 3, 5, 2, 4, 7, 6, 9]))
+
+```
 
 
 
