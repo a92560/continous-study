@@ -709,6 +709,19 @@ border-radius box-shadow background-size: cover/contain
    1. flex-grow: Number 占多少份
    2. justify-content: 主轴对齐方式
    3. align-items: 交叉轴对齐方式
+   
+6. 使用transform做动画改变的时候，我们可以略去浏览器渲染中的布局、分层和绘制阶段。
+
+7. 渲染过程包括
+
+   1. 解析html数据，将html文件解析成DOM树结构
+   2. 根据CSS样式表，来计算出DOM树所有节点的样式
+   3. 计算DOM元素的布局信息，使其都保存在布局树中
+   4. 对布局树进行分层，并生成分层树
+   5. 为每个图层生成绘制列表，并将其提交给合成线程
+   6. 合成线程将图层分为图块，并在光栅化线程池中将图块转化为位图
+   7. 合成线程发送绘制图块命令DrawQuad给浏览器进程
+   8. 浏览器进程根据DrawQuad消息生成页面，并显示到显示器上。
 
 
 
@@ -1970,16 +1983,14 @@ function cloneDeep(obj) {
 # GET和POST的区别
 
  	1. 首先引入等觅和副作用的概念
-      	1. 副作用：对服务器上的资源作改变，搜索是无副作用的，注册是副作用的
-      	2. 幂等：指发送M和N次请求，服务器上的状态一致，注册10个和11个账号是不幂等的，对文章进行查询10次和11次是幂等的
-	2. get主要用于无副作用，幂等的场景
-	3. post主要用于副作用，不幂等的情况
+      2. get主要用于无副作用，幂等的场景
+      3. post主要用于副作用，不幂等的情况
 	4. get请求能缓存，post不能
 	5. post请求数据放在body里面，get请求数据放在url里面
 	6. get请求url长度有限制，主要是看浏览器限制
 	7. post支持更多的编码类型
-        	1. Content-Type: application/json
-                  	2. Content-Type:  application/x-*www*-form-*urlencoded* 
+	  	1. Content-Type: application/json
+	            	2. Content-Type:  application/x-*www*-form-*urlencoded* 
                 	3. Content-Type: multipart/form-data
 
 
@@ -4771,6 +4782,83 @@ keep-alive
 关闭source-map
 
 webpack 的 DLL 插件全部打成一个 js 然后发布到自己的 CDN 上。
+
+
+
+# display: none, opacity: 0, visibility: hidden
+
+## display: none
+
+1. 不保存其所占的空间
+2. 没有事件
+3. 在block和none之间切换的话，会触发重绘
+
+## visiblity: hidden
+
+1. 保存其所占的空间
+2. 没有事件
+3. 在visible和hidden之间切换的话，触发回流。
+
+## opacity: 0
+
+1. 保存其所占的空间
+2. 有事件
+
+
+
+# 判断是否DOM元素
+
+## typeof dom === 'object' && dom instanceof HTMLElement && dom.nodeType === 1
+
+
+
+# 如何判断是变量是否正则
+
+## typeof regex = == 'object' && regex instanceof  RegExp
+
+
+
+# cdn
+
+## 原理
+
+CDN负载均衡设备会为用户选择一台合适的缓存服务器提供服务
+
+选择的依据包括
+
+根据用户IP地址，判断哪一台服务器离用户最近
+
+根据用户请求的url中携带的内容名称，判断哪一台服务器上有用户所需内容；
+
+根据各个服务器的负载情况，判断哪一台服务器的负载较小
+
+cdn会把最优的缓存服务器的ip地址返回给用户
+
+## 优点
+
+### 提高网页加载速度
+
+### 减少带宽消耗
+
+### 避免DDoS攻击
+
+
+
+# H5页面优化
+
+1. dns预解析
+   1. https <link rel='dns-prefetch' href='https://www.anqistudy.com'/>
+   2. /<script>/  标签的位置
+      1. script 标签的 async defer
+      2. aysnc 不确定执行的时机，看下载情况
+      3. defer 可以保证顺序执行，且在DOMContentLoaded之前执行，且按顺序。
+      4.  https://juejin.im/post/6869314860245745678 
+      5.  在 现实 当中， 延迟 脚本 并不 一定 会 按照 顺序 执行， 也不 一定 会在 DOMContentLoaded 事件 触发 前 执行， 因此 最好 只 包含 一个 延迟 脚本。
+         泽卡斯(Zakas. Nicholas C.). JavaScript高级程序设计(第3版) (图灵程序设计丛书) (Kindle 位置 639-641). 人民邮电出版社. Kindle 版本.
+
+
+
+
 
 
 
