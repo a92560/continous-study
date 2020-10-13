@@ -2398,7 +2398,7 @@ vue-router源码：
 
 # 洋葱模型解决的问题
 
-
+ https://juejin.im/post/6882704083661586440 
 
 # React-redux
 
@@ -4855,6 +4855,30 @@ cdn会把最优的缓存服务器的ip地址返回给用户
       4.  https://juejin.im/post/6869314860245745678 
       5.  在 现实 当中， 延迟 脚本 并不 一定 会 按照 顺序 执行， 也不 一定 会在 DOMContentLoaded 事件 触发 前 执行， 因此 最好 只 包含 一个 延迟 脚本。
          泽卡斯(Zakas. Nicholas C.). JavaScript高级程序设计(第3版) (图灵程序设计丛书) (Kindle 位置 639-641). 人民邮电出版社. Kindle 版本.
+
+
+
+
+
+# 对象数组去重
+
+```javascript
+function uniqueArr(keyArr, key) {
+    if (!key) {
+        return []
+    }
+    if (!Array.isArray(keyArr)) {
+        return []
+    }
+    const map = {};
+    return keyArr.reduce((cur, next) => {
+        !map[next[key]] && (map[next[key]] = true && cur.push(next));
+        return cur;
+    }, [])
+}
+```
+
+
 
 
 
