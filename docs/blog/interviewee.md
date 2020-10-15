@@ -1,4 +1,3 @@
-
 # DOM事件流
 
 Document -> HTML -> body -> div (事件捕获) （从上往下）
@@ -1668,7 +1667,25 @@ JavaScript文件的下载过程会阻塞DOM解析吗？
 ## XSS
 
 1. 跨站脚本攻击，攻击者将一段可执行的代码注入到网页中，如链接，输入框，分为持久性和临时性的，持久性的恶意代码将被存储到数据库中，会造成持久的攻击，临时性的仅在当前被攻击页面上生效。
+
 2. 防范方式：对与网页上获取的内容要做转义处理
+
+   1. 输入处理
+      1. 转义输入
+   2. 输出处理（在数据库里获取来的）
+      1. 过滤输出
+
+3. 解决方法
+
+   ### CSP
+
+   1. <http http-equiv="Content-Secure-Policy" content="script-src 'self'"/>
+
+   2. 常见配置
+
+      default-src 'none';script-src 'self'; connect-src 'self'; img-src: 'self'; style-src: 'self';
+
+   3.  Content-Security-Policy: script-src https://host1.com https://host2.com;  report-uri /my_amazing_csp_report_parser; 
 
 ## CSRF
 
@@ -3873,7 +3890,7 @@ https://regexper.com/
 ## p ~ ul p之后出现的所有ul
 
  通用选择器
-选择匹配的F元素，且位于匹配的E元素后的所有匹配的F元素 
+选择匹配的F元素，且位于匹配的E元素后的所有匹配的F元素  选择全部
 
 ```html
 <!DOCTYPE html>
@@ -3914,14 +3931,16 @@ https://regexper.com/
 ## div > span
 
  子选择器
-选择匹配的F元素，且匹配的F元素所匹配的E元素的子元素 
+选择匹配的F元素，且匹配的F元素所匹配的E元素的子元素 不会穿透
 
 ## div span
+
+会穿透
 
 ## .a + .b
 
   相邻兄弟选择器
-选择匹配的F元素，且匹配的F元素紧位于匹配的E元素的后面 
+a 和 b 一定要是兄弟元素 只选择第一个
 
 # ES6
 
@@ -4878,11 +4897,33 @@ function uniqueArr(keyArr, key) {
 }
 ```
 
+# meta标签
+
+## CSP
+
+<meta http-equiv="Content-Secure-Policy" content="default-src 'none'; script-src 'self'; report_uri '/test'; "/>
+
+## x-dns-prefetch-control
+
+<meta http-equiv="x-dns-prefetch" content="on"/>
+
+## name
+
+<meta name="keywords" content=""/>
+
+// 移动端
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
 
+# Set
 
+1.  add方法，向set加入值的时候，不会发生类型转换。所以'5' 和 5 是不同的值，Set内部判断两个值是否相等，使用的算法叫做 'Same-value-zero equality' 。它类似 '===' 。但是判断NaN时与 '===' 不同。认为是相同的。
 
+## WeakSet
 
-
+1. 与Set的区别
+   1. WeakSet只能存储对象引用，不能存放值，而Set对象都可以。即add的参数只能是引用类型的值
+   2. WeakSet对象中存储的对象值都是被弱引用的，即垃圾回收机制不考虑WeakSet对该对象的引用，
 
