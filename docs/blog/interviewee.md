@@ -4902,15 +4902,12 @@ function uniqueArr(keyArr, key) {
 ## CSP
 
 <meta http-equiv="Content-Secure-Policy" content="default-src 'none'; script-src 'self'; report_uri '/test'; "/>
-
 ## x-dns-prefetch-control
 
 <meta http-equiv="x-dns-prefetch" content="on"/>
-
 ## name
 
 <meta name="keywords" content=""/>
-
 // 移动端
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4921,9 +4918,22 @@ function uniqueArr(keyArr, key) {
 
 1.  add方法，向set加入值的时候，不会发生类型转换。所以'5' 和 5 是不同的值，Set内部判断两个值是否相等，使用的算法叫做 'Same-value-zero equality' 。它类似 '===' 。但是判断NaN时与 '===' 不同。认为是相同的。
 
-## WeakSet
+# WeakSet
 
 1. 与Set的区别
    1. WeakSet只能存储对象引用，不能存放值，而Set对象都可以。即add的参数只能是引用类型的值
-   2. WeakSet对象中存储的对象值都是被弱引用的，即垃圾回收机制不考虑WeakSet对该对象的引用，
+   2. WeakSet对象中存储的对象值都是被弱引用的，即垃圾回收机制不考虑WeakSet对该对象的引用，如果没有其他的变量或者属性引用这个对象值，则这个对象值会被垃圾回收掉（不考虑该对象是否还存在WeakSet中），所以，WeakSet对象里有多少个成员对象，取决于垃圾回收机制有没有运行，运行前后元素个数可能不一样，遍历结束之后，可能有些元素取不到了（被垃圾回收了），WeakSet对象是无法被遍历的，也没办法拿到它的所有元素
+
+# Map
+
++0, -0 视为同一个键 NaN视为同一个键
+
+# WeakMap
+
+1. WeakMap对象是一组键值对的弱引用，其中的键是弱引用对象，而值可以是任意。
+2. 每个键对自己所引用对象的引用都是弱引用，在没有其他引用和该键引用同一对象，这个对象会被垃圾回收。WeakMap是不可枚举的。
+
+
+
+# Regex ?: ?=
 
