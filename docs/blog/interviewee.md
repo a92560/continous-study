@@ -2035,9 +2035,9 @@ function cloneDeep(obj) {
 	5. post请求数据放在body里面，get请求数据放在url里面
 	6. get请求url长度有限制，主要是看浏览器限制
 	7. post支持更多的编码类型
-	  	1. Content-Type: application/json
-	            	2. Content-Type:  application/x-*www*-form-*urlencoded* 
-                	3. Content-Type: multipart/form-data
+	      1. Content-Type: application/json
+	      2. Content-Type:  application/x-*www*-form-*urlencoded*
+            3. Content-Type: multipart/form-data
 
 
 
@@ -5037,3 +5037,19 @@ function uniqueArr(keyArr, key) {
    6. 合成线程将图层分为图块，在光栅化线程池中将图块转化为位图
    7. 合成线程发送绘制图块命令给浏览器进程
    8. 浏览器进程生成页面显示到显示器上
+
+
+
+
+
+# 单向数据流
+
+1. 单一数据源
+
+   一个引用永远只有唯一的数据源，使用单一数据源的好处在于整个应用状态保存在一个对象中，这样我们我们可以随时提取出整个应用的状态进行持久化
+
+2. 状态是只读的，根据当前触发的action对当前应用的状态进行迭代，没有直接修改应用的状态，而是返回一份全新的状态
+
+3. 状态修改均由纯函数完成，即一定的输入必定得到一定的输出。
+
+   1. 追踪状态方便
