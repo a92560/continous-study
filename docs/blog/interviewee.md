@@ -5060,15 +5060,76 @@ function uniqueArr(keyArr, key) {
 
 # HTTP 常见的请求头响应头
 
-
+## Referer
 
 
 
 # 优化HTTP
 
+## TTFB： 首字节时间
 
+### DNS查询（1个rtt）TCP握手（1.5个rtt）TLS握手（2个rtt）
+
+### TLS握手优化
+
+1. Session ID
+   1. 客户端和服务端首次连接后各自保存一个会话的ID号，内存里存储主密钥和其他相关信息，当客户端再发一个ID过来，服务器就在内存里找到，找到会话密钥恢复会话状态，跳过证书验证和会话密钥交换。一个rtt开始传输数据。
+2.  False Start 
+   1. 客户端在发送编码改变通知时同时发送需传输数据，服务端在完成TLS握手时直接返回应用数据。
+
+## Content-Encoding: gzip
+
+## 合并请求
+
+## <link rel = 'dns-prefetch' href='http://www.baidu.com'/> 减少DNS查询
+
+## 利用缓存
+
+### 	http1.0 Expires 强缓存
+
+### 	http1.1 Cache-Control 
+
+##### 1. no-cache 需要使用协商缓存
+
+##### 2. no-store 不使用缓存
+
+##### 3. private 客户端可以缓存
+
+##### 4. public 客户端和代理都可以缓存
+
+##### 5.  max-age = t; 一个有效的时间
+
+## http1.1的长连接
+
+1. Connection: Keep-Alive
+2. 队头阻塞的问题，同一个域名限制TCP请求数量（6）
+
+
+
+## http2.0 
+
+1. 请求头压缩
+2. 多路复用 -> 同一个连接并发处理多个请求，而且并发请求的数量比HTTP1.1大好几个数量级
+3. 流 -> 二进制分帧
+   1. 所有的http2通信都在一个连接上完成，这个连接可以承载任意数量的双向数据流。相应地，每个数据流以消息的形式发送，而消息由一个或多个帧组成，这些帧可以乱序发生，然后再根据每个帧首的流标识符重新组装。
+
+## 避免重定向
 
 
 
 # Webpack loader plugin
 
+1. loader处理非JavaScript文件（webpack自身只理解JavaScript）
+2. plugin可以用于执行范围更广的任务，插件的范围包括，从打包优化和压缩一直到重新定义环境中的变量等。webpack运行到某时刻自动帮你做事情，类似于react/vue的生命周期的东西
+
+
+
+# 进程和线程
+
+## 进程
+
+### 操作系统调度的基本单位
+
+## 线程
+
+### CPU调度的最小单位
