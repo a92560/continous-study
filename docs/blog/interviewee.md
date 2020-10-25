@@ -1528,7 +1528,23 @@ JavaScript文件的下载过程会阻塞DOM解析吗？
 
           	1. 机密性由对称加密AES保证，完整性由SHA384摘要算法保证，身份认证和不可否认由RSA非对称加密保证。
 
+## 慢启动算法
 
+1. 包的数量，指数级别增加
+2. 遇到丢包，cwnd => congestion window （发送方） rwnd => receiver window（接收方）
+   1. 超时重传 => 不知道丢了哪个包
+   2. fast recovery => 快速重传 => tcp数据包有Seq => 遇到丢包 => 一直传送缺失包的 ack
+   3. 发送端重发对应数据包
+3. cwnd = slow start threshold ssthersh = cwnd / 2; （） （慢热启动算法）
+4. 指数级 => cwnd * 2 => 达到slow start threshold => 直线型增长（拥塞避免算法）
+
+
+
+## 拥塞控制算法
+
+1.  慢热启动算法 
+
+## 快速重传
 
 # Seq(序列号),Ack(确认号),Syn(同步序列号)
 
@@ -2591,6 +2607,15 @@ vue-router源码：
 
    1. 输入输出缓冲区的默认大小一般都是 **8K**
    2. 接收缓冲区把数据缓存入内核，等待recv()读取，recv()所做的工作，就是把内核缓冲区中的数据拷贝到应用层用户的buffer里面，并返回。若应用进程一直没有调用recv()进行读取的话，此数据会一直缓存在相应socket的接收缓冲区内。对于TCP，如果应用进程一直没有读取，接收缓冲区满了之后，发生的动作是：收端通知发端，接收窗口关闭（win=0）。这个便是滑动窗口的实现。保证TCP套接口接收缓冲区不会溢出，从而保证了TCP是可靠传输。因为对方不允许发出超过所通告窗口大小的数据。 这就是TCP的流量控制，如果对方无视窗口大小而发出了超过窗口大小的数据，则接收方TCP将丢弃它。
+   
+4. 滑动窗口
+
+   1. 窗口大小是一定的
+      1. 分为三个部分
+         1. 已接受数据且确认数据
+         2. 待确认数据（缺ACK）
+         3. 可用窗口
+      2. 确认数据接收，滑动窗口右移
 
 ### 特点
 
@@ -5060,9 +5085,33 @@ function uniqueArr(keyArr, key) {
 
 # HTTP 常见的请求头响应头
 
-## Referer
+## 请求头
+
+## Referer: 请求文件的网址
+
+## Range: bytes
+
+## Connection: Keep-Alive / Upgrade
+
+## Content-Length:  以8进制表示的请求体的长度
+
+## Host: 服务器地址
+
+## User-Agent: 浏览器的身份标识字符串
+
+##  Authorization 
 
 
+
+## 响应头
+
+## Etag 协商缓存相关的
+
+## Accept-Control-Allow-Origin
+
+## Server: nginx/apache
+
+## Content-Encoding: gzip
 
 # 优化HTTP
 
@@ -5111,7 +5160,7 @@ function uniqueArr(keyArr, key) {
 1. 请求头压缩
 2. 多路复用 -> 同一个连接并发处理多个请求，而且并发请求的数量比HTTP1.1大好几个数量级
 3. 流 -> 二进制分帧
-   1. 所有的http2通信都在一个连接上完成，这个连接可以承载任意数量的双向数据流。相应地，每个数据流以消息的形式发送，而消息由一个或多个帧组成，这些帧可以乱序发生，然后再根据每个帧首的流标识符重新组装。
+   1. 所有的http2通信都在一个连接上完成，这个连接可以承载任意数量的双向数据流。相应地，每个数据流以消息的形式发送，而消息由一个或多个帧组成，这些帧可以乱序发生，然后再根据每个帧首的序号重新组装。
 
 ## 避免重定向
 
@@ -5133,3 +5182,81 @@ function uniqueArr(keyArr, key) {
 ## 线程
 
 ### CPU调度的最小单位
+
+
+
+# 两栏布局
+
+http://www.manongjc.com/detail/15-qhopottlcbslpyh.html
+
+## 左float，右BFC/margin-left
+
+```html
+<style>
+    .wrapper {
+        height: 300px;
+        width: 100%;
+    }
+    .left {
+        width: 300px;
+        float: left;
+        height: 100%;
+    }
+    .right {
+        height: 100%;
+        overflow: auto;
+    }
+</style>
+```
+
+## 左绝对定位 + 右margin-left 
+
+```html
+<style>
+    .wrapper {
+        height: 300px;
+        width: 100%;
+    	position: relative;
+    }
+    
+    .left {
+        width: 300px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+    }
+    
+    .right {
+        height: 100%;
+        margin-left: 300px;
+    }
+    
+</style>
+
+```
+
+# DOM和BOM
+
+1. 如何知道某个dom元素是否在当前可视窗口呢？
+
+
+
+#  [前端](https://www.nowcoder.com/jump/super-jump/word?word=前端)性能指标 
+
+## FP/FCP
+
+1. First Paint： 页面在导航后首次呈现出不同于导航前内容的时间点
+2. First ContentFul Paint： 首次绘制任何文本、图像、非空白
+
+
+
+## FMP/LCP/DCL/L/CLS/TTI/SI
+
+1. First MeaningFul Paint：首次绘制页面'主要内容'的时间点
+2. Largest ContentFul Paint: 可视区域'内容'最大的可见元素开始出现在页面上的时间点
+3. DomContentloaded: html文件被完全加载和解析完成
+4. loaded: onLoad 资源被加载
+5. CLS: 累积布局偏移
+6. Time To Interactive： Performance.timing.domInteractive - Performance.timing.navigationStart
+7. SI：Speed Index。指标用于显示页面可见部分的显示速度, 单位是时间。
