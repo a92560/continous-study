@@ -5260,3 +5260,19 @@ http://www.manongjc.com/detail/15-qhopottlcbslpyh.html
 5. CLS: 累积布局偏移
 6. Time To Interactive： Performance.timing.domInteractive - Performance.timing.navigationStart
 7. SI：Speed Index。指标用于显示页面可见部分的显示速度, 单位是时间。
+
+
+
+## 打包 => script url 携带时间戳 => 把地址传给后端 => 前端通过接口获取 script url => document.getElementsByTagName('head')[0].append(script);
+
+
+
+# Tree Shaking
+
+1. tree shaking 是 rollup作者首先提出的。这里有一个比喻：
+
+   如果把代码比喻制作蛋糕。传统的方式是把鸡蛋（带壳）全部丢进去搅拌，然后放入烤箱，最后把（没有用的）蛋壳全部挑选并剔除出去。而 tree shaking 则是一开始就把有用的蛋白蛋黄放入搅拌，最后直接做出蛋糕
+
+2. 因此，相对于找出未使用的代码，显然找出已使用的代码更有把握。 Tree Shaking 是先找出已使用的代码，自然剩下的则是未使用的代码，最后通过注释的方法分别标注。
+
+3. 区分已使用和未使用的代码后，通过压缩器将未使用的代码删除
